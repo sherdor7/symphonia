@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="https://telegram.org/js/telegram-web-app.js?62"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Food Delivery Mini App</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      padding-bottom: 70px;
+    }
+
+    header {
+      background: #ffffff;
+      padding: 16px;
+      font-size: 20px;
+      font-weight: bold;
+      border-bottom: 1px solid #ddd;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .container {
+      padding: 14px;
+    }
+
+    .categories {
+      display: flex;
+      overflow-x: auto;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .category-btn {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      padding: 8px 14px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .category-btn.active {
+      background: #222;
+      color: white;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    }
+
+    .food-title {
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    .food-desc {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .food-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      background: #222;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+
+    .btn-secondary {
+      background: #eaeaea;
+      color: #222;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      border-top: 1px solid #ddd;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+    }
+
+    .tab-btn {
+      border: none;
+      background: transparent;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      font-weight: bold;
+      color: #000;
+    }
+
+    .qty-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      margin-bottom: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+
+    .section-title {
+      font-weight: bold;
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+
+    .total-box {
+      font-weight: bold;
+      font-size: 18px;
+      margin-top: 14px;
+    }
+  </style>
+</head>
+<body>
+  <header>Food Delivery</header>
+
+  <div class="container">
+    <!-- MAIN -->
+    <section id="tab-main">
+      <div class="section-title">Menu</div>
+      <div class="categories" id="categories"></div>
+      <div id="menu-list"></div>
+    </section>
+
+    <!-- CART -->
+    <section id="tab-cart" class="hidden">
+      <div class="section-title">Cart</div>
+      <div id="cart-list"></div>
+
+      <div class="card">
+        <label>Delivery Type</label>
+        <select id="deliveryType">
+          <option value="Delivery">Delivery</option>
+          <option value="Pickup">Pickup</option>
+        </select>
+
+        <label>Address</label>
+        <input id="address" placeholder="Enter your address" />
+
+        <label>Payment Method</label>
+        <select id="paymentMethod">
+          <option value="Cash">Cash</option>
+          <option value="Card">Card</option>
+          <option value="Online">Online Payment</option>
+        </select>
+
+        <label>Comment</label>
+        <textarea id="comment" placeholder="Comment for order"></textarea>
+
+        <button class="btn" onclick="checkout()">Confirm Order</button>
+      </div>
+    </section>
+
+    <!-- ORDERS -->
+    <section id="tab-orders" class="hidden">
+      <div class="section-title">Orders</div>
+      <div id="orders-list"></div>
+    </section>
+
+    <!-- PROFILE -->
+    <section id="tab-profile" class="hidden">
+      <div class="section-title">Profile</div>
+
+      <div class="card">
+        <label>Name</label>
+        <input id="profileName" placeholder="Your name" />
+
+        <label>Phone</label>
+        <input id="profilePhone" placeholder="+998..." />
+
+        <label>Language</label>
+        <select id="profileLanguage">
+          <option value="English">English</option>
+          <option value="Uzbek">Uzbek</option>
+          <option value="Russian">Russian</option>
+        </select>
+
+        <button class="btn" onclick="saveProfile()">Save Profile</button>
+      </div>
+
+      <div id="profile-info"></div>
+    </section>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="tab-btn active" onclick="switchTab('main', this)">Main</button>
+    <button class="tab-btn" onclick="switchTab('cart', this)">Cart</button>
+    <button class="tab-btn" onclick="switchTab('orders', this)">Orders</button>
+    <button class="tab-btn" onclick="switchTab('profile', this)">Profile</button>
+  </div>
+
+  <script>
+    const API_BASE = "";
+    let currentCategory = null;
+    let menuData = {};
+
+    const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+
+    if (tg) {
+      tg.ready();
+      tg.expand();
+    }
+
+    const tgUser = tg?.initDataUnsafe?.user || null;
+    const userId = tgUser ? String(tgUser.id) : "demo-user-1";
+    const initData = tg?.initData || "";
+
+    async function apiFetch(url, options = {}) {
+      const headers = {
+        "Content-Type": "application/json",
+        "X-Telegram-Init-Data": initData,
+        ...(options.headers || {})
+      };
+
+      return fetch(url, {
+        ...options,
+        headers
+      });
+    }
+
+    function switchTab(tab, btn) {
+      document.querySelectorAll("section").forEach(s => s.classList.add("hidden"));
+      document.getElementById(`tab-${tab}`).classList.remove("hidden");
+
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      if (tab === "cart") loadCart();
+      if (tab === "orders") loadOrders();
+      if (tab === "profile") loadProfile();
+    }
+
+    async function loadMenu() {
+      const res = await apiFetch(`${API_BASE}/api/menu`);
+      menuData = await res.json();
+
+      const categoriesEl = document.getElementById("categories");
+      categoriesEl.innerHTML = "";
+
+      const categories = Object.keys(menuData);
+      currentCategory = categories[0];
+
+      categories.forEach(cat => {
+        const btn = document.createElement("button");
+        btn.className = "category-btn" + (cat === currentCategory ? " active" : "");
+        btn.innerText = cat;
+        btn.onclick = () => {
+          currentCategory = cat;
+          renderCategories();
+          renderMenu();
+        };
+        categoriesEl.appendChild(btn);
+      });
+
+      renderMenu();
+    }
+
+    function renderCategories() {
+      [...document.querySelectorAll(".category-btn")].forEach(btn => {
+        btn.classList.toggle("active", btn.innerText === currentCategory);
+      });
+    }
+
+    function renderMenu() {
+      const menuList = document.getElementById("menu-list");
+      menuList.innerHTML = "";
+
+      const items = menuData[currentCategory] || [];
+      items.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="food-title">${item.name}</div>
+          <div class="food-desc">${item.description}</div>
+          <div class="food-row">
+            <div>${item.price.toLocaleString()} UZS</div>
+            <button class="btn" onclick="addToCart(${item.id})">Add to cart</button>
+          </div>
+        `;
+        menuList.appendChild(card);
+      });
+    }
+
+    async function addToCart(productId) {
+      await apiFetch(`${API_BASE}/api/cart/add`, {
+        method: "POST",
+        body: JSON.stringify({
+          product_id: productId,
+          quantity: 1
+        })
+      });
+      alert("Added to cart");
+    }
+
+    async function loadCart() {
+      const res = await apiFetch(`${API_BASE}/api/cart/me`);
+      const data = await res.json();
+
+      const cartList = document.getElementById("cart-list");
+      cartList.innerHTML = "";
+
+      if (!data.items.length) {
+        cartList.innerHTML = `<div class="card">Your cart is empty</div>`;
+        return;
+      }
+
+      data.items.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="food-title">${item.name}</div>
+          <div class="food-row">
+            <div>${item.price.toLocaleString()} UZS</div>
+            <div class="qty-controls">
+              <button class="btn btn-secondary" onclick="changeQty(${item.product_id}, ${item.quantity - 1})">-</button>
+              <span>${item.quantity}</span>
+              <button class="btn btn-secondary" onclick="changeQty(${item.product_id}, ${item.quantity + 1})">+</button>
+            </div>
+          </div>
+          <div style="margin-top:8px;">Line Total: ${item.line_total.toLocaleString()} UZS</div>
+        `;
+        cartList.appendChild(card);
+      });
+
+      const totalCard = document.createElement("div");
+      totalCard.className = "card total-box";
+      totalCard.innerText = `Total: ${data.total.toLocaleString()} UZS`;
+      cartList.appendChild(totalCard);
+    }
+
+    async function changeQty(productId, quantity) {
+      await apiFetch(`${API_BASE}/api/cart/update`, {
+        method: "POST",
+        body: JSON.stringify({
+          product_id: productId,
+          quantity: quantity
+        })
+      });
+      loadCart();
+    }
+
+    async function checkout() {
+      const payload = {
+        delivery_type: document.getElementById("deliveryType").value,
+        address: document.getElementById("address").value,
+        payment_method: document.getElementById("paymentMethod").value,
+        comment: document.getElementById("comment").value
+      };
+
+      const res = await apiFetch(`${API_BASE}/api/checkout`, {
+        method: "POST",
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.detail || "Checkout failed");
+        return;
+      }
+
+      alert("Order placed successfully");
+      loadCart();
+      loadOrders();
+    }
+
+    async function loadOrders() {
+      const res = await apiFetch(`${API_BASE}/api/orders/me`);
+      const orders = await res.json();
+
+      const ordersList = document.getElementById("orders-list");
+      ordersList.innerHTML = "";
+
+      if (!orders.length) {
+        ordersList.innerHTML = `<div class="card">No orders yet</div>`;
+        return;
+      }
+
+      orders.forEach(order => {
+        const itemsHtml = order.items.map(i => `${i.name} x${i.quantity}`).join("<br>");
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="food-title">Order #${order.order_id}</div>
+          <div>Status: ${order.status}</div>
+          <div style="margin-top:8px;">${itemsHtml}</div>
+          <div style="margin-top:8px;"><strong>Total:</strong> ${order.total.toLocaleString()} UZS</div>
+          <div><strong>Delivery:</strong> ${order.delivery_type}</div>
+          <div><strong>Payment:</strong> ${order.payment_method}</div>
+        `;
+        ordersList.appendChild(card);
+      });
+    }
+
+    async function loadProfile() {
+      const res = await apiFetch(`${API_BASE}/api/profile/me`);
+      const profile = await res.json();
+
+      document.getElementById("profileName").value = profile.name || "";
+      document.getElementById("profilePhone").value = profile.phone || "";
+      document.getElementById("profileLanguage").value = profile.language || "English";
+
+      document.getElementById("profile-info").innerHTML = `
+        <div class="card">
+          <div><strong>Name:</strong> ${profile.name || "-"}</div>
+          <div><strong>Phone:</strong> ${profile.phone || "-"}</div>
+          <div><strong>Language:</strong> ${profile.language || "-"}</div>
+          <div><strong>User ID:</strong> ${userId}</div>
+        </div>
+      `;
+    }
+
+    async function saveProfile() {
+      const payload = {
+        name: document.getElementById("profileName").value,
+        phone: document.getElementById("profilePhone").value,
+        language: document.getElementById("profileLanguage").value
+      };
+
+      const res = await apiFetch(`${API_BASE}/api/profile/update`, {
+        method: "POST",
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      alert(data.message || "Profile saved");
+      loadProfile();
+    }
+
+    loadMenu();
+  </script>
+</body>
+</html>
