@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Waiter Panel</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
+      color: #111827;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #111827;
+      color: white;
+      padding: 16px;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.16);
+    }
+
+    .waiter-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .waiter-title {
+      font-size: 36px;
+      font-weight: 600;
+      line-height: 1;
+      margin: 0;
+    }
+
+    .waiter-icon {
+      height: 32px;
+      width: auto;
+      object-fit: contain;
+      display: block;
+      flex-shrink: 0;
+    }
+
+    .page {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 0 0 12px;
+    }
+
+    .muted {
+      color: #6b7280;
+    }
+
+    .message {
+      min-height: 20px;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+
+    .message.error {
+      color: #b91c1c;
+    }
+
+    .message.success {
+      color: #166534;
+    }
+
+    input,
+    textarea,
+    button {
+      font: inherit;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      padding: 12px;
+      margin-top: 8px;
+      background: white;
+    }
+
+    textarea {
+      min-height: 86px;
+      resize: vertical;
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 12px 14px;
+      background: #111827;
+      color: white;
+      cursor: pointer;
+      transition: background-color 160ms ease;
+    }
+
+    button:hover,
+    button:active {
+      background: #1f2937;
+    }
+
+    button.secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    button.secondary:hover,
+    button.secondary:active {
+      background: #d1d5db;
+    }
+
+    button:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .tab-btn {
+      background: #e5e7eb;
+      color: #111827;
+      min-width: 120px;
+      font-weight: bold;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .tab-badge {
+      min-width: 22px;
+      height: 22px;
+      padding: 0 6px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #dc2626;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .tab-badge.hidden {
+      display: none !important;
+    }
+
+    .tab-btn.active {
+      background: #111827;
+      color: white;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.9fr);
+      gap: 16px;
+    }
+
+    .category-tabs {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      margin-bottom: 14px;
+    }
+
+    .category-tabs button {
+      white-space: nowrap;
+      background: #f3f4f6;
+      color: #111827;
+    }
+
+    .category-tabs button.active {
+      background: #111827;
+      color: white;
+    }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .menu-item {
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+      background: #fafafa;
+    }
+
+    .menu-item.sold-out {
+      opacity: 0.58;
+    }
+
+    .menu-item-image {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6b7280;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .menu-item-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .menu-item-name {
+      font-weight: bold;
+      line-height: 1.35;
+    }
+
+    .menu-item-price {
+      color: #374151;
+      font-size: 14px;
+    }
+
+    .summary-list,
+    .orders-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .orders-list {
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      align-items: start;
+    }
+
+    .summary-item,
+    .order-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 12px;
+      background: #fafafa;
+      transition: background-color 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+    }
+
+    .orders-list .order-card {
+      margin-bottom: 0;
+      height: 100%;
+    }
+
+    .summary-top,
+    .order-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .qty-row,
+    .order-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .qty-row button {
+      width: 38px;
+      padding: 10px 0;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: #ececec;
+      font-size: 13px;
+      font-weight: bold;
+      text-transform: capitalize;
+      white-space: nowrap;
+    }
+
+    .status-new { background: #fdf0c3; }
+    .status-preparing { background: #dbeafe; }
+    .status-ready { background: #fde68a; }
+    .status-served { background: #d1fae5; }
+    .status-cancelled { background: #fee2e2; }
+
+    .order-card.ready-alert {
+      border-color: rgba(56, 161, 105, 0.38);
+      box-shadow: 0 0 0 1px rgba(56, 161, 105, 0.08);
+      animation: waiterReadyPulse 1.2s ease-in-out infinite;
+    }
+
+    @keyframes waiterReadyPulse {
+      0%, 100% {
+        background: #fafafa;
+        box-shadow: 0 0 0 0 rgba(134, 239, 172, 0.22);
+      }
+      50% {
+        background: #ecfdf5;
+        box-shadow: 0 0 0 8px rgba(134, 239, 172, 0.18);
+      }
+    }
+
+    .summary-total {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .editor-note {
+      margin-bottom: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #eef2ff;
+      color: #312e81;
+      font-size: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="waiter-header">
+      <img src="/static/images/bowtie.png" class="waiter-icon" alt="Bow tie icon" />
+      <h1 class="waiter-title">Waiter Panel</h1>
+    </div>
+    <div class="muted" style="color: rgba(255,255,255,0.76); margin-top: 4px;">Fast dine-in ordering for restaurant staff.</div>
+  </header>
+
+  <main class="page">
+    <section id="login-screen" class="card">
+      <div class="section-title">Staff Login</div>
+      <div class="muted">Enter waiter name and the shared waiter password.</div>
+      <form onsubmit="loginWaiter(event)">
+        <input id="waiterNameInput" type="text" placeholder="Enter waiter name" />
+        <input id="passwordInput" type="password" placeholder="Enter waiter password" />
+        <button type="submit" style="margin-top: 12px;">Continue</button>
+      </form>
+      <div id="loginMessage" class="message"></div>
+    </section>
+
+    <section id="waiter-screen" class="hidden">
+      <div class="tabs">
+        <button id="tab-btn-new-order" class="tab-btn active" type="button" onclick="switchTab('new-order')">New Order</button>
+        <button id="tab-btn-orders" class="tab-btn" type="button" onclick="switchTab('orders')">
+          <span>Orders</span>
+          <span id="tab-btn-orders-badge" class="tab-badge hidden">0</span>
+        </button>
+      </div>
+
+      <section id="tab-new-order">
+        <div class="layout">
+          <div class="card">
+            <div class="section-title">Menu</div>
+            <div id="menuMessage" class="message"></div>
+            <div id="categoryTabs" class="category-tabs"></div>
+            <div id="menuRoot"></div>
+          </div>
+
+          <aside class="card">
+            <div class="section-title">Current Order</div>
+            <div id="editorNote" class="editor-note hidden"></div>
+            <label>
+              <div class="muted">Table Number</div>
+              <input
+                id="tableNumberInput"
+                type="number"
+                min="1"
+                inputmode="numeric"
+                placeholder="Select table number"
+                oninput="markTableNumberSelected()"
+                onchange="markTableNumberSelected()"
+              />
+            </label>
+            <div id="summaryList" class="summary-list" style="margin-top: 14px;"></div>
+            <label style="display: block; margin-top: 14px;">
+              <div class="muted">Order Comment</div>
+              <textarea id="orderComment" placeholder="Optional kitchen note"></textarea>
+            </label>
+            <div id="summaryTotal" class="summary-total" style="margin-top: 14px;">Total: 0 UZS</div>
+            <div class="order-actions" style="margin-top: 14px;">
+              <button id="submitBtn" type="button" onclick="submitOrder()">Send to Kitchen</button>
+              <button class="secondary" type="button" onclick="resetEditor()">Clear</button>
+            </div>
+            <div id="submitMessage" class="message"></div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="tab-orders" class="hidden">
+        <div class="card">
+          <div class="section-title">Dine-In Orders</div>
+          <div id="ordersMessage" class="message"></div>
+          <div id="ordersList" class="orders-list"></div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const API_BASE = "";
+    const APP_TIME_ZONE = "Asia/Tashkent";
+    const WAITER_TOKEN_KEY = "waiterToken";
+    const WAITER_NAME_KEY = "waiterName";
+    const WAITER_POLL_INTERVAL_MS = 5000;
+    let waiterToken = localStorage.getItem(WAITER_TOKEN_KEY) || "";
+    let waiterName = localStorage.getItem(WAITER_NAME_KEY) || "";
+    let currentTab = "new-order";
+    let menuData = {};
+    let currentCategory = "";
+    let currentOrder = {};
+    let dineInOrders = [];
+    let editingOrderId = null;
+    let tableNumberSelected = false;
+    let waiterPollingHandle = null;
+
+    function formatCurrency(value) {
+      return Number(value || 0).toLocaleString() + " UZS";
+    }
+
+    function formatStatus(value) {
+      return String(value || "-")
+        .split("_")
+        .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(" ");
+    }
+
+    function formatDate(value) {
+      if (!value) {
+        return "-";
+      }
+      const date = new Date(value);
+      if (isNaN(date.getTime())) {
+        return value;
+      }
+      const formatted = new Intl.DateTimeFormat("en-GB", {
+        timeZone: APP_TIME_ZONE,
+        dateStyle: "short",
+        timeStyle: "short",
+      }).format(date);
+      console.log("[waiter] formatted displayed time", { raw: value, formatted, timeZone: APP_TIME_ZONE });
+      return formatted;
+    }
+
+    function setMessage(id, text, type = "") {
+      const el = document.getElementById(id);
+      el.textContent = text || "";
+      el.className = `message${type ? ` ${type}` : ""}`;
+    }
+
+    async function waiterFetch(url, options = {}) {
+      const isFormData = options.body instanceof FormData;
+      const headers = { ...(options.headers || {}) };
+      if (!isFormData && !headers["Content-Type"]) {
+        headers["Content-Type"] = "application/json";
+      }
+      if (waiterToken) {
+        headers["X-Waiter-Token"] = waiterToken;
+      }
+
+      const response = await fetch(url, {
+        ...options,
+        headers,
+      });
+
+      if (response.status === 401 && url !== `${API_BASE}/api/waiter/login`) {
+        logoutWaiter("Session expired. Please log in again.");
+      }
+
+      return response;
+    }
+
+    function showWaiterScreen() {
+      document.getElementById("login-screen").classList.add("hidden");
+      document.getElementById("waiter-screen").classList.remove("hidden");
+    }
+
+    function showLoginScreen(message = "") {
+      document.getElementById("login-screen").classList.remove("hidden");
+      document.getElementById("waiter-screen").classList.add("hidden");
+      setMessage("loginMessage", message, message ? "error" : "");
+    }
+
+    function logoutWaiter(message = "") {
+      waiterToken = "";
+      waiterName = "";
+      if (waiterPollingHandle) {
+        clearInterval(waiterPollingHandle);
+        waiterPollingHandle = null;
+      }
+      localStorage.removeItem(WAITER_TOKEN_KEY);
+      localStorage.removeItem(WAITER_NAME_KEY);
+      showLoginScreen(message);
+    }
+
+    function startWaiterPolling() {
+      if (waiterPollingHandle) {
+        return;
+      }
+      waiterPollingHandle = setInterval(() => {
+        if (!waiterToken) {
+          return;
+        }
+        loadOrders();
+      }, WAITER_POLL_INTERVAL_MS);
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.getElementById("tab-new-order").classList.toggle("hidden", tab !== "new-order");
+      document.getElementById("tab-orders").classList.toggle("hidden", tab !== "orders");
+      document.getElementById("tab-btn-new-order").classList.toggle("active", tab === "new-order");
+      document.getElementById("tab-btn-orders").classList.toggle("active", tab === "orders");
+    }
+
+    function getReadyWaiterOrderCount() {
+      return dineInOrders.filter(order => order.status === "ready" && !order.waiter_ready_acknowledged_at).length;
+    }
+
+    function updateOrdersTabBadge() {
+      const badgeEl = document.getElementById("tab-btn-orders-badge");
+      const readyCount = getReadyWaiterOrderCount();
+      badgeEl.textContent = String(readyCount);
+      badgeEl.classList.toggle("hidden", readyCount <= 0);
+      console.log("[waiter] ready badge count", {
+        ready_count: readyCount,
+      });
+    }
+
+    function getMenuItemsFlat() {
+      return Object.values(menuData).flat();
+    }
+
+    function getProductById(productId) {
+      return getMenuItemsFlat().find(item => item.id === productId) || null;
+    }
+
+    function renderCategoryTabs() {
+      const categories = Object.keys(menuData);
+      const root = document.getElementById("categoryTabs");
+      if (!categories.length) {
+        root.innerHTML = "";
+        return;
+      }
+
+      if (!currentCategory || !menuData[currentCategory]) {
+        currentCategory = categories[0];
+      }
+
+      root.innerHTML = categories.map(category => `
+        <button
+          type="button"
+          class="${currentCategory === category ? "active" : ""}"
+          onclick="selectCategory('${category.replace(/'/g, "\\'")}')"
+        >${category}</button>
+      `).join("");
+    }
+
+    function selectCategory(category) {
+      currentCategory = category;
+      renderCategoryTabs();
+      renderMenu();
+    }
+
+    function renderMenu() {
+      const root = document.getElementById("menuRoot");
+      const items = menuData[currentCategory] || [];
+      if (!items.length) {
+        root.innerHTML = `<div class="muted">No menu items available.</div>`;
+        return;
+      }
+
+      root.innerHTML = `
+        <div class="menu-grid">
+          ${items.map(item => `
+            <div class="menu-item ${item.is_available === false ? "sold-out" : ""}">
+              <div class="menu-item-image">
+                ${item.image_url ? `<img src="${item.image_url}" alt="${item.name}" />` : "No Image"}
+              </div>
+              <div class="menu-item-name">${item.name}</div>
+              <div class="menu-item-price">${formatCurrency(item.price)}</div>
+              ${item.is_available === false ? `<div class="muted">Run Out</div>` : ""}
+              <button type="button" onclick="addItem(${item.id})" ${item.is_available === false ? "disabled" : ""}>Add</button>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function addItem(productId) {
+      const product = getProductById(productId);
+      if (product && product.is_available === false) {
+        return;
+      }
+      currentOrder[productId] = (currentOrder[productId] || 0) + 1;
+      renderSummary();
+    }
+
+    function markTableNumberSelected() {
+      tableNumberSelected = true;
+    }
+
+    function updateQty(productId, delta) {
+      const nextQty = (currentOrder[productId] || 0) + delta;
+      if (nextQty <= 0) {
+        delete currentOrder[productId];
+      } else {
+        currentOrder[productId] = nextQty;
+      }
+      renderSummary();
+    }
+
+    function renderSummary() {
+      const entries = Object.entries(currentOrder);
+      const list = document.getElementById("summaryList");
+      let total = 0;
+
+      if (!entries.length) {
+        list.innerHTML = `<div class="muted">No items added yet.</div>`;
+      } else {
+        list.innerHTML = entries.map(([productId, quantity]) => {
+          const product = getProductById(Number(productId));
+          if (!product) {
+            return "";
+          }
+          const lineTotal = product.price * quantity;
+          total += lineTotal;
+          return `
+            <div class="summary-item">
+              <div class="summary-top">
+                <div>
+                  <div style="font-weight: bold;">${product.name}</div>
+                  <div class="muted">${formatCurrency(product.price)} each</div>
+                </div>
+                <div style="font-weight: bold;">${formatCurrency(lineTotal)}</div>
+              </div>
+              <div class="qty-row">
+                <button class="secondary" type="button" onclick="updateQty(${product.id}, -1)">-</button>
+                <div>${quantity}</div>
+                <button class="secondary" type="button" onclick="updateQty(${product.id}, 1)">+</button>
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+
+      document.getElementById("summaryTotal").textContent = `Total: ${formatCurrency(total)}`;
+      const editorNote = document.getElementById("editorNote");
+      if (editingOrderId) {
+        editorNote.textContent = `Editing dine-in order #${editingOrderId}`;
+        editorNote.classList.remove("hidden");
+        document.getElementById("submitBtn").textContent = "Update Order";
+      } else {
+        editorNote.classList.add("hidden");
+        editorNote.textContent = "";
+        document.getElementById("submitBtn").textContent = "Send to Kitchen";
+      }
+    }
+
+    async function loadMenu() {
+      setMessage("menuMessage", "");
+      const res = await fetch(`${API_BASE}/api/menu`);
+      if (!res.ok) {
+        setMessage("menuMessage", "Failed to load menu.", "error");
+        return;
+      }
+
+      menuData = await res.json();
+      renderCategoryTabs();
+      renderMenu();
+    }
+
+    async function loadOrders() {
+      setMessage("ordersMessage", "");
+      const res = await waiterFetch(`${API_BASE}/api/waiter/orders`);
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setMessage("ordersMessage", data.detail || "Failed to load dine-in orders.", "error");
+        return;
+      }
+
+      dineInOrders = await res.json();
+      updateOrdersTabBadge();
+      renderOrders();
+    }
+
+    function renderOrders() {
+      const root = document.getElementById("ordersList");
+      updateOrdersTabBadge();
+      if (!dineInOrders.length) {
+        root.innerHTML = `<div class="muted">No dine-in orders yet.</div>`;
+        return;
+      }
+
+      root.innerHTML = dineInOrders.map(order => `
+        <div
+          class="order-card ${order.status === "ready" && !order.waiter_ready_acknowledged_at ? "ready-alert" : ""}"
+          onclick="handleWaiterOrderCardClick('${order.order_id}')"
+        >
+          <div class="order-top">
+            <div>
+              <div style="font-weight: bold;">Table ${order.table_number || "-"}</div>
+              <div class="muted">Order #${order.order_id}</div>
+              <div class="muted">${formatDate(order.created_time)}</div>
+            </div>
+            <span class="status-badge status-${order.status || "new"}">${formatStatus(order.status)}</span>
+          </div>
+          <div style="margin-top: 10px;">
+            ${(order.items || []).map(item => `
+              <div>${item.name} x${item.quantity}</div>
+            `).join("")}
+          </div>
+          <div class="muted" style="margin-top: 8px;">Comment: ${order.comment || "-"}</div>
+          <div class="order-actions">
+            <button
+              type="button"
+              onclick="startEditingOrder(event, '${order.order_id}')"
+              ${["served", "cancelled"].includes(order.status) ? "disabled" : ""}
+            >Edit Order</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function startEditingOrder(event, orderId) {
+      event.stopPropagation();
+      const order = dineInOrders.find(item => item.order_id === orderId);
+      if (!order) {
+        return;
+      }
+
+      editingOrderId = order.order_id;
+      tableNumberSelected = Boolean(order.table_number);
+      currentOrder = {};
+      (order.items || []).forEach(item => {
+        currentOrder[item.product_id] = item.quantity;
+      });
+      document.getElementById("tableNumberInput").value = order.table_number || "";
+      document.getElementById("orderComment").value = order.comment || "";
+      setMessage("submitMessage", "");
+      renderSummary();
+      switchTab("new-order");
+    }
+
+    async function handleWaiterOrderCardClick(orderId) {
+      const order = dineInOrders.find(item => item.order_id === orderId);
+      if (!order || order.status !== "ready" || order.waiter_ready_acknowledged_at) {
+        return;
+      }
+
+      const res = await waiterFetch(`${API_BASE}/api/waiter/orders/${orderId}/acknowledge`, {
+        method: "POST"
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setMessage("ordersMessage", data.detail || "Failed to acknowledge ready order.", "error");
+        return;
+      }
+
+      const index = dineInOrders.findIndex(item => item.order_id === orderId);
+      if (index !== -1 && data.order) {
+        dineInOrders[index] = data.order;
+      }
+      updateOrdersTabBadge();
+      renderOrders();
+    }
+
+    function resetEditor() {
+      editingOrderId = null;
+      tableNumberSelected = false;
+      currentOrder = {};
+      document.getElementById("tableNumberInput").value = "";
+      document.getElementById("orderComment").value = "";
+      setMessage("submitMessage", "");
+      renderSummary();
+    }
+
+    async function submitOrder() {
+      const tableNumberInput = document.getElementById("tableNumberInput");
+      const rawTableNumber = tableNumberInput.value.trim();
+      const tableNumber = Number(rawTableNumber);
+      if (!tableNumberSelected || rawTableNumber === "" || !Number.isInteger(tableNumber) || tableNumber <= 0) {
+        setMessage("submitMessage", "Please select table number", "error");
+        tableNumberInput.focus();
+        return;
+      }
+
+      const items = Object.entries(currentOrder).map(([productId, quantity]) => ({
+        product_id: Number(productId),
+        quantity,
+      }));
+      if (!items.length) {
+        setMessage("submitMessage", "Add at least one item to the order.", "error");
+        return;
+      }
+
+      const button = document.getElementById("submitBtn");
+      button.disabled = true;
+      setMessage("submitMessage", "");
+
+      const endpoint = editingOrderId
+        ? `${API_BASE}/api/waiter/orders/${editingOrderId}`
+        : `${API_BASE}/api/waiter/orders`;
+      const method = editingOrderId ? "PUT" : "POST";
+
+      try {
+        const res = await waiterFetch(endpoint, {
+          method,
+          body: JSON.stringify({
+            table_number: tableNumber,
+            items,
+            comment: document.getElementById("orderComment").value,
+            waiter_name: waiterName,
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          setMessage("submitMessage", data.detail || "Failed to save dine-in order.", "error");
+          return;
+        }
+
+        resetEditor();
+        setMessage("submitMessage", data.message || "Dine-in order saved.", "success");
+        await loadOrders();
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    async function loginWaiter(event) {
+      event.preventDefault();
+      const enteredWaiterName = document.getElementById("waiterNameInput").value.trim();
+      const password = document.getElementById("passwordInput").value.trim();
+      if (!enteredWaiterName) {
+        setMessage("loginMessage", "Waiter name is required.", "error");
+        return;
+      }
+      if (!password) {
+        setMessage("loginMessage", "Password is required.", "error");
+        return;
+      }
+
+      setMessage("loginMessage", "");
+      const res = await fetch(`${API_BASE}/api/waiter/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: enteredWaiterName, password }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setMessage("loginMessage", data.detail || "Login failed.", "error");
+        return;
+      }
+
+      waiterToken = data.token;
+      waiterName = data.waiter_name || enteredWaiterName;
+      localStorage.setItem(WAITER_TOKEN_KEY, waiterToken);
+      localStorage.setItem(WAITER_NAME_KEY, waiterName);
+      document.getElementById("waiterNameInput").value = "";
+      document.getElementById("passwordInput").value = "";
+      showWaiterScreen();
+      switchTab("new-order");
+      await Promise.all([loadMenu(), loadOrders()]);
+      startWaiterPolling();
+      renderSummary();
+    }
+
+    async function bootstrapWaiterPanel() {
+      if (!waiterToken || !waiterName) {
+        showLoginScreen();
+        return;
+      }
+
+      const res = await waiterFetch(`${API_BASE}/api/waiter/orders`);
+      if (!res.ok) {
+        logoutWaiter("Please log in to continue.");
+        return;
+      }
+
+      dineInOrders = await res.json();
+      showWaiterScreen();
+      switchTab("new-order");
+      startWaiterPolling();
+      updateOrdersTabBadge();
+      renderOrders();
+      await loadMenu();
+      renderSummary();
+    }
+
+    renderSummary();
+    bootstrapWaiterPanel();
+  </script>
+</body>
+</html>

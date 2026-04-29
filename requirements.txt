@@ -2,3 +2,4 @@ fastapi
 uvicorn
 python-telegram-bot==21.6
 init-data-py
+sqlalchemy

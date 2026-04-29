@@ -2,70 +2,251 @@
 <html lang="en">
 <head>
   <script src="https://telegram.org/js/telegram-web-app.js?62"></script>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+  />
   <title>Food Delivery Mini App</title>
   <style>
+    :root {
+      --bg: #f7f1e7;
+      --bg-soft: #fbf7ef;
+      --card: rgba(255, 251, 244, 0.9);
+      --card-strong: #fffaf1;
+      --ink: #172848;
+      --ink-soft: #425171;
+      --muted: #81786a;
+      --accent: #7f1f3b;
+      --accent-soft: #f1dde4;
+      --gold: #8f7a34;
+      --line: rgba(23, 40, 72, 0.14);
+      --shadow: 0 10px 26px rgba(51, 44, 29, 0.08);
+      --shadow-strong: 0 16px 30px rgba(51, 44, 29, 0.12);
+      --nav: #142746;
+      --white: #fffdf8;
+      --radius-xl: 28px;
+      --radius-lg: 22px;
+      --radius-md: 18px;
+      --radius-sm: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
-      padding-bottom: 70px;
+      font-family: "Segoe UI", "Trebuchet MS", sans-serif;
+      background:
+        radial-gradient(circle at top center, rgba(255, 255, 255, 0.8), transparent 32%),
+        linear-gradient(180deg, #fbf7ef 0%, #f6efe4 46%, #f3eadf 100%);
+      color: var(--ink);
+      padding-bottom: 126px;
     }
 
     header {
-      background: #ffffff;
-      padding: 16px;
-      font-size: 20px;
-      font-weight: bold;
-      border-bottom: 1px solid #ddd;
       position: sticky;
       top: 0;
       z-index: 10;
+      padding: 24px 18px 14px;
+      background: linear-gradient(180deg, rgba(251, 247, 239, 0.97), rgba(251, 247, 239, 0.88));
+      backdrop-filter: blur(12px);
+    }
+
+    .app-title {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 44px;
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+      color: var(--accent);
+    }
+
+    .app-subtitle {
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--ink-soft);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
     }
 
     .container {
-      padding: 14px;
+      padding: 6px 14px 0;
+    }
+
+    section {
+      animation: fade-in 220ms ease;
+    }
+
+    .section-title {
+      margin: 8px 2px 16px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 34px;
+      line-height: 1;
+      color: var(--ink);
+      letter-spacing: -0.03em;
+    }
+
+    .section-label {
+      display: inline-flex;
+      margin-bottom: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(127, 31, 59, 0.08);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
     }
 
     .categories {
       display: flex;
+      gap: 12px;
       overflow-x: auto;
-      gap: 8px;
-      margin-bottom: 16px;
+      margin: 0 -4px 18px;
+      padding: 2px 4px 10px;
+      scrollbar-width: none;
+      position: sticky;
+      top: 96px;
+      z-index: 8;
+      background: linear-gradient(180deg, rgba(247, 241, 231, 0.98), rgba(247, 241, 231, 0.92));
+      backdrop-filter: blur(10px);
+    }
+
+    .categories::-webkit-scrollbar {
+      display: none;
     }
 
     .category-btn {
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 20px;
-      padding: 8px 14px;
+      flex: 0 0 auto;
+      border: 2px solid var(--ink);
+      background: rgba(255, 252, 246, 0.72);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 12px 22px;
+      font-size: 17px;
+      line-height: 1;
       cursor: pointer;
       white-space: nowrap;
+      transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease, color 180ms ease, border-color 180ms ease;
+      box-shadow: 0 6px 14px rgba(23, 40, 72, 0.04);
     }
 
     .category-btn.active {
-      background: #222;
-      color: white;
+      background: linear-gradient(180deg, #8f2444 0%, #721c37 100%);
+      color: #fff7f3;
+      border-color: transparent;
+      box-shadow: 0 12px 22px rgba(127, 31, 59, 0.24);
     }
 
     .card {
-      background: white;
-      border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 12px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      background: var(--card);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(6px);
+    }
+
+    .menu-feed {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .category-section {
+      scroll-margin-top: 160px;
+    }
+
+    .category-section-title {
+      margin: 0 2px 12px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 26px;
+      line-height: 1;
+      color: var(--ink);
+      letter-spacing: -0.03em;
+    }
+
+    .category-row {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(154px, 154px);
+      gap: 14px;
+      overflow-x: auto;
+      padding: 4px 22vw 10px 2px;
+      scroll-snap-type: x proximity;
+      scrollbar-width: none;
+    }
+
+    .category-row::-webkit-scrollbar {
+      display: none;
+    }
+
+    .menu-card {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 12px;
+      border-radius: 24px;
+      background: linear-gradient(180deg, rgba(255, 250, 241, 0.95), rgba(248, 241, 230, 0.92));
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      scroll-snap-align: start;
+      min-height: 218px;
+    }
+
+    .food-image {
+      width: 100%;
+      height: 126px;
+      object-fit: cover;
+      border-radius: 18px;
+      display: block;
+      background: linear-gradient(135deg, #d7cfc2, #f1e7d4);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+    }
+
+    .food-content {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .food-header {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
 
     .food-title {
-      font-weight: bold;
-      margin-bottom: 6px;
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 19px;
+      line-height: 1.05;
+      color: var(--ink);
+      letter-spacing: -0.03em;
     }
 
-    .food-desc {
-      color: #666;
-      font-size: 14px;
-      margin-bottom: 8px;
+    .food-price {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: -0.02em;
+      white-space: normal;
     }
 
     .food-row {
@@ -75,18 +256,251 @@
       gap: 12px;
     }
 
+    .menu-card.sold-out {
+      opacity: 0.62;
+      cursor: default;
+    }
+
+    .sold-out-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      background: rgba(127, 31, 59, 0.12);
+      color: var(--accent);
+    }
+
+    .cart-item-card {
+      display: grid;
+      grid-template-columns: 84px 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .cart-item-image {
+      width: 84px;
+      height: 84px;
+      border-radius: 18px;
+      overflow: hidden;
+      background: linear-gradient(135deg, #efe3cd, #d4c4ae);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--ink-soft);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 28px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .cart-item-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .cart-item-body {
+      min-width: 0;
+    }
+
+    .cart-item-meta {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .location-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .location-row .btn {
+      width: auto;
+      flex-shrink: 0;
+    }
+
+    .location-row-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .location-message,
+    .map-picker-status,
+    .help-text {
+      font-size: 13px;
+      color: var(--ink-soft);
+      margin-top: -2px;
+      margin-bottom: 12px;
+    }
+
+    .location-message.error,
+    .map-picker-status.error {
+      color: #b24848;
+    }
+
+    .selected-location-card {
+      background: rgba(255, 251, 245, 0.9);
+      border: 1px solid rgba(23, 40, 72, 0.08);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      margin-top: -2px;
+      margin-bottom: 12px;
+      font-size: 14px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    }
+
+    .selected-location-card.hidden {
+      display: none;
+    }
+
+    .selected-location-title {
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--ink);
+    }
+
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .order-status-column {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+
+    .order-action-btn {
+      padding: 9px 14px;
+      border-radius: 14px;
+      font-size: 13px;
+      line-height: 1;
+      box-shadow: 0 6px 12px rgba(20, 39, 70, 0.08);
+    }
+
+    .courier-details-panel {
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255, 251, 245, 0.92);
+      border: 1px solid rgba(23, 40, 72, 0.08);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    }
+
+    .courier-details-title {
+      margin-bottom: 8px;
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .courier-details-row {
+      font-size: 14px;
+      color: var(--ink-soft);
+      line-height: 1.45;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+      border: 1px solid transparent;
+    }
+
+    .status-new {
+      background: #f6ead0;
+      color: #8f6d22;
+    }
+
+    .status-preparing {
+      background: #e4eefb;
+      color: #335a91;
+    }
+
+    .status-ready {
+      background: #f3e2c0;
+      color: #906c23;
+    }
+
+    .status-ready_for_pickup {
+      background: #f3e2c0;
+      color: #906c23;
+    }
+
+    .status-delivering {
+      background: #dfeee1;
+      color: #406946;
+    }
+
+    .status-delivered {
+      background: #e7efe1;
+      color: #537146;
+    }
+
+    .status-picked_up {
+      background: #e7efe1;
+      color: #537146;
+    }
+
+    .status-cancelled {
+      background: #f6dfdd;
+      color: #a54848;
+    }
+
+    .btn,
+    .tab-btn,
+    .qty-btn,
+    .add-cart-close {
+      transition: transform 160ms ease, box-shadow 180ms ease, background-color 180ms ease, color 180ms ease;
+    }
+
     .btn {
-      background: #222;
-      color: white;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: linear-gradient(180deg, #1b3c69 0%, #142746 100%);
+      color: #fffdf8;
       border: none;
-      border-radius: 8px;
-      padding: 8px 12px;
+      border-radius: 18px;
+      padding: 12px 18px;
       cursor: pointer;
+      font-size: 17px;
+      font-weight: 600;
+      box-shadow: 0 10px 18px rgba(20, 39, 70, 0.22);
+    }
+
+    .btn:active,
+    .tab-btn:active,
+    .qty-btn:active,
+    .add-cart-close:active,
+    .category-btn:active {
+      transform: translateY(1px) scale(0.99);
     }
 
     .btn-secondary {
-      background: #eaeaea;
-      color: #222;
+      background: rgba(255, 252, 246, 0.92);
+      color: var(--ink);
+      border: 1px solid rgba(23, 40, 72, 0.1);
+      box-shadow: 0 8px 16px rgba(20, 39, 70, 0.08);
     }
 
     .hidden {
@@ -95,122 +509,520 @@
 
     .bottom-nav {
       position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: white;
-      border-top: 1px solid #ddd;
+      left: 10px;
+      right: 10px;
+      bottom: 10px;
       display: flex;
-      justify-content: space-around;
-      padding: 10px 0;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px;
+      background: linear-gradient(180deg, rgba(20, 39, 70, 0.98), rgba(17, 33, 60, 0.98));
+      border-radius: 26px;
+      box-shadow: 0 18px 34px rgba(20, 39, 70, 0.36);
+      z-index: 20;
     }
 
     .tab-btn {
+      flex: 1;
       border: none;
       background: transparent;
-      font-size: 14px;
+      color: rgba(252, 247, 237, 0.7);
+      font-size: 13px;
+      font-weight: 600;
       cursor: pointer;
+      padding: 8px 4px;
+      border-radius: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      transition: transform 160ms ease, background-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+    }
+
+    .tab-icon {
+      position: relative;
+      width: 38px;
+      height: 38px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+    }
+
+    .tab-icon svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .cart-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      min-width: 19px;
+      height: 19px;
+      padding: 0 5px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #f8d46b;
+      color: #142746;
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1;
+      box-shadow: 0 6px 12px rgba(20, 39, 70, 0.18);
+    }
+
+    .cart-badge.hidden {
+      display: none;
+    }
+
+    .tab-label {
+      line-height: 1;
     }
 
     .tab-btn.active {
-      font-weight: bold;
-      color: #000;
+      background: rgba(255, 255, 255, 0.08);
+      color: #fffaf1;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+    }
+
+    .tab-btn.active .tab-icon {
+      background: rgba(255, 255, 255, 0.16);
+      box-shadow: 0 10px 18px rgba(0, 0, 0, 0.12);
     }
 
     .qty-controls {
-      display: flex;
+      display: inline-flex;
       gap: 8px;
       align-items: center;
+      background: rgba(20, 39, 70, 0.05);
+      padding: 6px;
+      border-radius: 999px;
     }
 
-    input, select, textarea {
+    input,
+    select,
+    textarea {
       width: 100%;
-      padding: 10px;
-      margin-top: 6px;
-      margin-bottom: 12px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
+      padding: 14px 16px;
+      margin-top: 8px;
+      margin-bottom: 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(23, 40, 72, 0.12);
       box-sizing: border-box;
+      background: rgba(255, 252, 247, 0.96);
+      color: var(--ink);
+      font-size: 16px;
+      box-shadow: inset 0 1px 2px rgba(20, 39, 70, 0.04);
     }
 
-    .section-title {
-      font-weight: bold;
-      font-size: 18px;
-      margin-bottom: 12px;
+    label {
+      display: block;
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    textarea {
+      min-height: 98px;
+      resize: vertical;
     }
 
     .total-box {
-      font-weight: bold;
-      font-size: 18px;
+      background: linear-gradient(180deg, #f4e8d2, #f6eddc);
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 700;
+      font-size: 24px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+    }
+
+    .empty-cart-actions {
+      margin-top: 16px;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(18, 28, 44, 0.36);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 40;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 220ms ease;
+      backdrop-filter: blur(8px);
+    }
+
+    .modal-overlay.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .map-picker-modal,
+    .add-cart-modal {
+      background: linear-gradient(180deg, #fffbf4 0%, #f8efe1 100%);
+      border-radius: 28px;
+      padding: 18px;
+      box-shadow: 0 22px 44px rgba(27, 33, 43, 0.2);
+    }
+
+    .map-picker-modal {
+      width: min(100%, 720px);
+      max-height: min(90vh, 720px);
+      transform: translateY(18px) scale(0.97);
+      opacity: 0;
+      display: flex;
+      flex-direction: column;
+      transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease;
+    }
+
+    .modal-overlay.visible .map-picker-modal,
+    .modal-overlay.visible .add-cart-modal {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+
+    .map-picker-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .map-picker-title {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 24px;
+      color: var(--ink);
+    }
+
+    .map-picker-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
       margin-top: 14px;
+    }
+
+    .map-picker-actions .btn {
+      width: auto;
+    }
+
+    #map-picker-canvas {
+      width: 100%;
+      height: min(52vh, 420px);
+      border-radius: 18px;
+      overflow: hidden;
+      background: #ece3d4;
+    }
+
+    .add-cart-modal {
+      width: min(100%, 380px);
+      transform: translateY(18px) scale(0.97);
+      opacity: 0;
+      transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease;
+    }
+
+    .add-cart-close {
+      width: 36px;
+      height: 36px;
+      margin-left: auto;
+      padding: 0;
+      border-radius: 999px;
+      border: none;
+      background: rgba(20, 39, 70, 0.08);
+      color: var(--ink);
+      font-size: 18px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: none;
+    }
+
+    .add-cart-content {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      margin-top: 8px;
+    }
+
+    .add-cart-image {
+      width: 98px;
+      height: 98px;
+      flex-shrink: 0;
+      border-radius: 22px;
+      background: linear-gradient(135deg, #efe3cd, #d4c4ae);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      color: #555;
+      font-size: 30px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .add-cart-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .add-cart-details {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .add-cart-label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 6px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .add-cart-name {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 24px;
+      color: var(--ink);
+      line-height: 1.08;
+      margin-bottom: 12px;
+      word-break: break-word;
+    }
+
+    .add-cart-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .add-cart-qty {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(20, 39, 70, 0.06);
+      border-radius: 999px;
+      padding: 6px;
+    }
+
+    .qty-btn {
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      border: none;
+      border-radius: 999px;
+      background: var(--white);
+      color: var(--ink);
+      font-size: 20px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(20, 39, 70, 0.1);
+    }
+
+    .qty-value {
+      min-width: 18px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--ink);
+    }
+
+    .add-cart-ok {
+      min-width: 92px;
+      border-radius: 16px;
+      padding: 11px 16px;
+    }
+
+    .profile-summary {
+      display: grid;
+      gap: 10px;
+      color: var(--ink);
+    }
+
+    .profile-summary strong {
+      color: var(--ink);
+    }
+
+    @keyframes fade-in {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 480px) {
+      header {
+        padding: 22px 16px 14px;
+      }
+
+      .app-title {
+        font-size: 42px;
+      }
+
+      .section-title {
+        font-size: 31px;
+      }
+
+      .categories {
+        top: 90px;
+      }
+
+      .category-row {
+        grid-auto-columns: minmax(146px, 146px);
+        padding-right: 26vw;
+      }
+
+      .menu-card {
+        min-height: 206px;
+      }
+
+      .food-image {
+        height: 116px;
+      }
+
+      .food-title {
+        font-size: 18px;
+      }
+
+      .food-price {
+        font-size: 17px;
+      }
+
+      .add-cart-content {
+        align-items: flex-start;
+      }
+
+      .add-cart-actions {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .add-cart-ok {
+        width: 100%;
+      }
+
+      .food-row,
+      .location-row-actions,
+      .map-picker-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .location-row-actions .btn,
+      .map-picker-actions .btn {
+        width: 100%;
+      }
     }
   </style>
 </head>
 <body>
-  <header>Food Delivery</header>
+  <header>
+    <h1 id="app-title-text" class="app-title">Simfoniya</h1>
+    <div id="app-subtitle-text" class="app-subtitle">Milliy taomlari</div>
+  </header>
 
   <div class="container">
     <!-- MAIN -->
     <section id="tab-main">
-      <div class="section-title">Menu</div>
+      <div id="main-section-label" class="section-label">Discover</div>
+      <div id="main-section-title" class="section-title">Menu</div>
       <div class="categories" id="categories"></div>
-      <div id="menu-list"></div>
+      <div id="menu-list" class="menu-feed"></div>
     </section>
 
     <!-- CART -->
     <section id="tab-cart" class="hidden">
-      <div class="section-title">Cart</div>
+      <div id="cart-section-label" class="section-label">Checkout</div>
+      <div id="cart-section-title" class="section-title">Cart</div>
       <div id="cart-list"></div>
 
-      <div class="card">
-        <label>Delivery Type</label>
+      <div id="cart-checkout-card" class="card">
+        <label id="delivery-type-label">Delivery Type</label>
         <select id="deliveryType">
-          <option value="Delivery">Delivery</option>
-          <option value="Pickup">Pickup</option>
+          <option id="delivery-option-delivery" value="Delivery">Delivery</option>
+          <option id="delivery-option-pickup" value="Pickup">Pickup</option>
         </select>
 
-        <label>Address</label>
-        <input id="address" placeholder="Enter your address" />
+        <div id="delivery-details-section">
+          <label id="address-label">Address</label>
+          <input id="address" placeholder="Enter your address" />
+          <div class="location-row">
+            <div class="location-row-actions">
+              <button id="use-location-btn" class="btn btn-secondary" type="button" onclick="useMyLocation()">Use my location</button>
+              <button id="select-map-btn" class="btn btn-secondary" type="button" onclick="openMapPicker()">Select on map</button>
+            </div>
+          </div>
+          <div id="location-message" class="location-message"></div>
+          <div id="selected-location-card" class="selected-location-card hidden">
+            <div id="selected-location-title" class="selected-location-title">Selected delivery location</div>
+            <div id="selected-location-text">No location selected</div>
+          </div>
+        </div>
 
-        <label>Payment Method</label>
+        <label id="payment-method-label">Payment Method</label>
         <select id="paymentMethod">
-          <option value="Cash">Cash</option>
-          <option value="Card">Card</option>
-          <option value="Online">Online Payment</option>
+          <option id="payment-option-cash" value="Cash">Cash</option>
         </select>
 
-        <label>Comment</label>
+        <label id="comment-label">Comment</label>
         <textarea id="comment" placeholder="Comment for order"></textarea>
+        <div id="delivery-note-text" class="help-text">Delivery will be negotiated with courier.</div>
 
-        <button class="btn" onclick="checkout()">Confirm Order</button>
+        <button id="confirm-order-btn" class="btn" onclick="checkout()">Confirm Order</button>
       </div>
     </section>
 
     <!-- ORDERS -->
     <section id="tab-orders" class="hidden">
-      <div class="section-title">Orders</div>
+      <div id="orders-section-label" class="section-label">Tracking</div>
+      <div id="orders-section-title" class="section-title">Orders</div>
       <div id="orders-list"></div>
     </section>
 
     <!-- PROFILE -->
     <section id="tab-profile" class="hidden">
-      <div class="section-title">Profile</div>
+      <div id="profile-section-label" class="section-label">Account</div>
+      <div id="profile-section-title" class="section-title">Profile</div>
 
       <div class="card">
-        <label>Name</label>
+        <label id="profile-name-label">Name</label>
         <input id="profileName" placeholder="Your name" />
 
-        <label>Phone</label>
+        <label id="profile-phone-label">Phone</label>
         <input id="profilePhone" placeholder="+998..." />
 
-        <label>Language</label>
+        <label id="profile-language-label">Language</label>
         <select id="profileLanguage">
           <option value="English">English</option>
           <option value="Uzbek">Uzbek</option>
           <option value="Russian">Russian</option>
+          <option value="Uzbek Cyrillic">Ўзбек</option>
         </select>
 
-        <button class="btn" onclick="saveProfile()">Save Profile</button>
+        <button id="save-profile-btn" class="btn" onclick="saveProfile()">Save Profile</button>
       </div>
 
       <div id="profile-info"></div>
@@ -218,16 +1030,664 @@
   </div>
 
   <div class="bottom-nav">
-    <button class="tab-btn active" onclick="switchTab('main', this)">Main</button>
-    <button class="tab-btn" onclick="switchTab('cart', this)">Cart</button>
-    <button class="tab-btn" onclick="switchTab('orders', this)">Orders</button>
-    <button class="tab-btn" onclick="switchTab('profile', this)">Profile</button>
+    <button class="tab-btn active" onclick="switchTab('main', this)">
+      <span class="tab-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M4.5 6.5a2 2 0 0 1 2-2h4.5a3 3 0 0 1 2 0H17.5a2 2 0 0 1 2 2v11a1 1 0 0 1-1.4.9l-1.7-.76a2 2 0 0 0-1.63 0l-1.87.83a2 2 0 0 1-1.62 0l-1.87-.83a2 2 0 0 0-1.63 0l-1.7.76a1 1 0 0 1-1.4-.9z"/><path d="M12 4.5v13.8"/></svg>
+      </span>
+      <span id="nav-main-text" class="tab-label">Main</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('cart', this)">
+      <span class="tab-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><circle cx="9" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/><path d="M3.5 5h2l1.7 8.1a1 1 0 0 0 1 .8h8.9a1 1 0 0 0 1-.75L19.7 8H7.2"/><path d="M8 8h12"/></svg>
+        <span id="cart-badge" class="cart-badge hidden">0</span>
+      </span>
+      <span id="nav-cart-text" class="tab-label">Cart</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('orders', this)">
+      <span class="tab-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M7 4.5h10a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-11a2 2 0 0 1 2-2z"/><path d="M8.5 9h7"/><path d="M8.5 12.5h7"/><path d="M8.5 16h4.5"/></svg>
+      </span>
+      <span id="nav-orders-text" class="tab-label">Orders</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('profile', this)">
+      <span class="tab-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8.2" r="3.2"/><path d="M5.5 18.5a6.8 6.8 0 0 1 13 0"/></svg>
+      </span>
+      <span id="nav-profile-text" class="tab-label">Profile</span>
+    </button>
+  </div>
+
+  <div id="add-to-cart-modal" class="modal-overlay" onclick="handleAddToCartOverlay(event)">
+    <div class="add-cart-modal">
+      <button class="add-cart-close" type="button" aria-label="Close" onclick="closeAddToCartModal()">&times;</button>
+      <div class="add-cart-content">
+        <div id="add-to-cart-image" class="add-cart-image">F</div>
+        <div class="add-cart-details">
+          <div id="add-cart-label-text" class="add-cart-label">Select quantity</div>
+          <div id="add-to-cart-name" class="add-cart-name">Food Item</div>
+          <div class="add-cart-actions">
+            <div class="add-cart-qty">
+              <button class="qty-btn" type="button" onclick="updateAddToCartQuantity(-1)">-</button>
+              <span id="add-to-cart-qty" class="qty-value">1</span>
+              <button class="qty-btn" type="button" onclick="updateAddToCartQuantity(1)">+</button>
+            </div>
+            <button id="add-to-cart-ok" class="btn add-cart-ok" type="button" onclick="confirmAddToCart()">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="map-picker-modal" class="modal-overlay" onclick="handleMapPickerOverlay(event)">
+    <div class="map-picker-modal">
+      <div class="map-picker-header">
+        <div id="map-picker-title-text" class="map-picker-title">Select Delivery Location</div>
+        <button class="add-cart-close" type="button" aria-label="Close" onclick="closeMapPicker()">&times;</button>
+      </div>
+      <div id="map-picker-status" class="map-picker-status">Tap the map to place the delivery pin.</div>
+      <div id="map-picker-canvas"></div>
+      <div class="map-picker-actions">
+        <button id="map-current-location-btn" class="btn btn-secondary" type="button" onclick="centerMapPickerOnCurrentLocation()">Use current location</button>
+        <button id="map-cancel-btn" class="btn btn-secondary" type="button" onclick="closeMapPicker()">Cancel</button>
+        <button id="map-confirm-btn" class="btn" type="button" onclick="confirmMapSelection()">Confirm selection</button>
+      </div>
+    </div>
   </div>
 
   <script>
     const API_BASE = "";
+    const DEFAULT_MAP_CENTER = [41.3111, 69.2797];
+    const DEFAULT_MAP_ZOOM = 13;
     let currentCategory = null;
     let menuData = {};
+    let selectedCartProduct = null;
+    let selectedCartQuantity = 1;
+    let checkoutLatitude = null;
+    let checkoutLongitude = null;
+    let checkoutResolvedAddress = "";
+    let mapPicker = null;
+    let mapPickerMarker = null;
+    let mapPickerSelection = null;
+    let currentLanguage = "English";
+    let locationRefreshRequired = false;
+    let locationRefreshMessage = "";
+    let locationRefreshAlertShown = false;
+    const expandedCourierDetails = new Set();
+
+    const translations = {
+      English: {
+        appTitle: "Simfoniya",
+        appSubtitle: "Milliy taomlari",
+        discover: "Discover",
+        menu: "Menu",
+        checkout: "Checkout",
+        cart: "Cart",
+        tracking: "Tracking",
+        orders: "Orders",
+        account: "Account",
+        profile: "Profile",
+        deliveryType: "Delivery Type",
+        delivery: "Delivery",
+        pickup: "Pickup",
+        address: "Address",
+        addressPlaceholder: "Enter your address",
+        useMyLocation: "Use my location",
+        selectOnMap: "Select on map",
+        selectedDeliveryLocation: "Selected delivery location",
+        noLocationSelected: "No location selected",
+        paymentMethod: "Payment Method",
+        cash: "Cash",
+        card: "Card",
+        onlinePayment: "Online Payment",
+        comment: "Comment",
+        commentPlaceholder: "Comment for order",
+        confirmOrder: "Confirm Order",
+        name: "Name",
+        namePlaceholder: "Your name",
+        phone: "Phone",
+        phonePlaceholder: "+998...",
+        language: "Language",
+        saveProfile: "Save Profile",
+        main: "Main",
+        addToCart: "Add to cart",
+        selectQuantity: "Select quantity",
+        selectDeliveryLocation: "Select Delivery Location",
+        useCurrentLocation: "Use current location",
+        cancel: "Cancel",
+        confirmSelection: "Confirm selection",
+        minutes: "mins",
+        total: "Total",
+        lineTotal: "Line Total",
+        emptyCartTitle: "Your cart is empty",
+        emptyCartDescription: "Add something delicious from the menu to begin checkout.",
+        returnToMenu: "Back to menu",
+        deliveryNote: "Delivery will be negotiated with courier.",
+        orderPlaced: "Order placed successfully",
+        checkoutFailed: "Checkout failed",
+        noOrdersTitle: "No orders yet",
+        noOrdersDescription: "Your placed orders will appear here with live status updates.",
+        order: "Order",
+        selectedLocation: "Selected Location",
+        payment: "Payment",
+        savedLocation: "Saved Location",
+        userId: "User ID",
+        profileSaved: "Profile saved",
+        courierDetails: "Courier Details",
+        courierName: "Courier name",
+        courierPhone: "Courier phone",
+        phoneUnavailable: "Phone not available",
+        locationSelectedFromMap: "Location selected from map.",
+        locationSelected: "Location selected.",
+        currentLocationSaved: "Current location saved for this order.",
+        locationSaved: "Location saved for this order.",
+        locationNotSupported: "Location is not supported on this device.",
+        gettingLocation: "Getting your location...",
+        gettingCurrentLocation: "Getting your current location...",
+        locationAccessDenied: "Location access denied",
+        tapMapToPin: "Tap the map to place the delivery pin.",
+        mapSelectionNeeded: "Select a point on the map first.",
+        resolvingAddress: "Resolving address...",
+        deliveryPointSelected: "Delivery point selected. Confirm to use it.",
+        pinMoved: "Pin moved. Confirm to use the updated location.",
+        currentLocationSelected: "Current location selected. Adjust the pin if needed.",
+        noDescription: "No description",
+        status_new: "New",
+        status_preparing: "Preparing",
+        status_ready: "Ready",
+        status_ready_for_pickup: "Ready",
+        status_delivering: "Delivering",
+        status_delivered: "Delivered",
+        status_picked_up: "Picked Up",
+        status_cancelled: "Cancelled",
+        category_Sets: "Sets",
+        category_Burgers: "Burgers",
+        category_Shawarma: "Shawarma",
+        category_Samsa: "Samsa",
+        category_Hot_Meals: "Hot Meals",
+        category_Snacks: "Snacks",
+        category_Sauces: "Sauces",
+        category_Salads: "Salads",
+        category_Drinks: "Drinks",
+        category_Others: "Others"
+      },
+      Uzbek: {
+        appTitle: "Simfoniya",
+        appSubtitle: "Milliy taomlari",
+        discover: "Tanlang",
+        menu: "Menyu",
+        checkout: "Buyurtma",
+        cart: "Savat",
+        tracking: "Kuzatuv",
+        orders: "Buyurtmalar",
+        account: "Akkaunt",
+        profile: "Profil",
+        deliveryType: "Yetkazib berish turi",
+        delivery: "Yetkazib berish",
+        pickup: "Olib ketish",
+        address: "Manzil",
+        addressPlaceholder: "Manzilingizni kiriting",
+        useMyLocation: "Joylashuvimni olish",
+        selectOnMap: "Xaritadan tanlash",
+        selectedDeliveryLocation: "Tanlangan yetkazib berish nuqtasi",
+        noLocationSelected: "Joylashuv tanlanmagan",
+        paymentMethod: "To'lov usuli",
+        cash: "Naqd",
+        card: "Karta",
+        onlinePayment: "Onlayn to'lov",
+        comment: "Izoh",
+        commentPlaceholder: "Buyurtma uchun izoh",
+        confirmOrder: "Buyurtmani tasdiqlash",
+        name: "Ism",
+        namePlaceholder: "Ismingiz",
+        phone: "Telefon",
+        phonePlaceholder: "+998...",
+        language: "Til",
+        saveProfile: "Profilni saqlash",
+        main: "Asosiy",
+        addToCart: "Savatga qo'shish",
+        selectQuantity: "Miqdorni tanlang",
+        selectDeliveryLocation: "Yetkazib berish joyini tanlang",
+        useCurrentLocation: "Joriy joylashuv",
+        cancel: "Bekor qilish",
+        confirmSelection: "Tanlovni tasdiqlash",
+        minutes: "daq",
+        total: "Jami",
+        lineTotal: "Pozitsiya summasi",
+        emptyCartTitle: "Savatingiz bo'sh",
+        emptyCartDescription: "Buyurtmani boshlash uchun menyudan mazali taom tanlang.",
+        returnToMenu: "Menyuga qaytish",
+        deliveryNote: "Yetkazib berish narxi kuryer bilan kelishiladi.",
+        orderPlaced: "Buyurtma muvaffaqiyatli yuborildi",
+        checkoutFailed: "Buyurtmani rasmiylashtirib bo'lmadi",
+        noOrdersTitle: "Buyurtmalar hali yo'q",
+        noOrdersDescription: "Buyurtmalaringiz va ularning holati shu yerda ko'rinadi.",
+        order: "Buyurtma",
+        selectedLocation: "Tanlangan joylashuv",
+        payment: "To'lov",
+        savedLocation: "Saqlangan joylashuv",
+        userId: "Foydalanuvchi ID",
+        profileSaved: "Profil saqlandi",
+        courierDetails: "Kuryer ma'lumotlari",
+        courierName: "Kuryer ismi",
+        courierPhone: "Kuryer telefoni",
+        phoneUnavailable: "Telefon raqami mavjud emas",
+        locationSelectedFromMap: "Joylashuv xaritadan tanlandi.",
+        locationSelected: "Joylashuv tanlandi.",
+        currentLocationSaved: "Joriy joylashuv ushbu buyurtma uchun saqlandi.",
+        locationSaved: "Joylashuv saqlandi.",
+        locationNotSupported: "Qurilmada joylashuv funksiyasi qo'llab-quvvatlanmaydi.",
+        gettingLocation: "Joylashuvingiz olinmoqda...",
+        gettingCurrentLocation: "Joriy joylashuv olinmoqda...",
+        locationAccessDenied: "Joylashuvga ruxsat berilmadi",
+        tapMapToPin: "Yetkazib berish pinini qo'yish uchun xaritaga bosing.",
+        mapSelectionNeeded: "Avval xaritada nuqta tanlang.",
+        resolvingAddress: "Manzil aniqlanmoqda...",
+        deliveryPointSelected: "Yetkazib berish nuqtasi tanlandi. Tasdiqlang.",
+        pinMoved: "Pin ko'chirildi. Yangilangan joyni tasdiqlang.",
+        currentLocationSelected: "Joriy joylashuv tanlandi. Zarur bo'lsa pinda o'zgartiring.",
+        noDescription: "Tavsif yo'q",
+        status_new: "Yangi",
+        status_preparing: "Tayyorlanmoqda",
+        status_ready: "Tayyor",
+        status_ready_for_pickup: "Tayyor",
+        status_delivering: "Yo'lda",
+        status_delivered: "Yetkazildi",
+        status_picked_up: "Olib ketildi",
+        status_cancelled: "Bekor qilindi",
+        category_Sets: "Setlar",
+        category_Burgers: "Burgerlar",
+        category_Shawarma: "Shavarma",
+        category_Samsa: "Somsa",
+        category_Hot_Meals: "Issiq taomlar",
+        category_Snacks: "Gazaklar",
+        category_Sauces: "Souslar",
+        category_Salads: "Salatlar",
+        category_Drinks: "Ichimliklar",
+        category_Others: "Boshqalar"
+      },
+      Russian: {
+        appTitle: "Simfoniya",
+        appSubtitle: "Тёплые блюда, аккуратная доставка",
+        discover: "Выбор",
+        menu: "Меню",
+        checkout: "Оформление",
+        cart: "Корзина",
+        tracking: "Статус",
+        orders: "Заказы",
+        account: "Аккаунт",
+        profile: "Профиль",
+        deliveryType: "Тип доставки",
+        delivery: "Доставка",
+        pickup: "Самовывоз",
+        address: "Адрес",
+        addressPlaceholder: "Введите ваш адрес",
+        useMyLocation: "Использовать мою геолокацию",
+        selectOnMap: "Выбрать на карте",
+        selectedDeliveryLocation: "Выбранная точка доставки",
+        noLocationSelected: "Локация не выбрана",
+        paymentMethod: "Способ оплаты",
+        cash: "Наличные",
+        card: "Карта",
+        onlinePayment: "Онлайн-оплата",
+        comment: "Комментарий",
+        commentPlaceholder: "Комментарий к заказу",
+        confirmOrder: "Подтвердить заказ",
+        name: "Имя",
+        namePlaceholder: "Ваше имя",
+        phone: "Телефон",
+        phonePlaceholder: "+998...",
+        language: "Язык",
+        saveProfile: "Сохранить профиль",
+        main: "Главная",
+        addToCart: "В корзину",
+        selectQuantity: "Выберите количество",
+        selectDeliveryLocation: "Выберите место доставки",
+        useCurrentLocation: "Текущая геолокация",
+        cancel: "Отмена",
+        confirmSelection: "Подтвердить выбор",
+        minutes: "мин",
+        total: "Итого",
+        lineTotal: "Сумма позиции",
+        emptyCartTitle: "Корзина пуста",
+        emptyCartDescription: "Добавьте что-нибудь вкусное из меню, чтобы начать оформление.",
+        orderPlaced: "Заказ успешно оформлен",
+        checkoutFailed: "Не удалось оформить заказ",
+        noOrdersTitle: "Заказов пока нет",
+        noOrdersDescription: "Здесь будут показаны ваши заказы и их статусы.",
+        order: "Заказ",
+        selectedLocation: "Выбранная локация",
+        payment: "Оплата",
+        savedLocation: "Сохранённая локация",
+        userId: "ID пользователя",
+        profileSaved: "Профиль сохранён",
+        courierDetails: "Данные курьера",
+        courierName: "Имя курьера",
+        courierPhone: "Телефон курьера",
+        phoneUnavailable: "Телефон не указан",
+        locationSelectedFromMap: "Локация выбрана на карте.",
+        locationSelected: "Локация выбрана.",
+        currentLocationSaved: "Текущая локация сохранена для этого заказа.",
+        locationSaved: "Локация сохранена.",
+        locationNotSupported: "На этом устройстве геолокация не поддерживается.",
+        gettingLocation: "Получаем вашу геолокацию...",
+        gettingCurrentLocation: "Получаем текущую геолокацию...",
+        locationAccessDenied: "Доступ к геолокации запрещён",
+        tapMapToPin: "Нажмите на карту, чтобы поставить точку доставки.",
+        mapSelectionNeeded: "Сначала выберите точку на карте.",
+        resolvingAddress: "Определяем адрес...",
+        deliveryPointSelected: "Точка доставки выбрана. Подтвердите выбор.",
+        pinMoved: "Метка перемещена. Подтвердите обновлённую точку.",
+        currentLocationSelected: "Текущая локация выбрана. При необходимости поправьте метку.",
+        noDescription: "Нет описания",
+        status_new: "Новый",
+        status_preparing: "Готовится",
+        status_ready: "Готов",
+        status_ready_for_pickup: "ГОТОВО",
+        status_delivering: "В доставке",
+        status_delivered: "Доставлен",
+        status_picked_up: "Получен",
+        status_cancelled: "Отменён",
+        category_Sets: "Сеты",
+        category_Burgers: "Бургеры",
+        category_Shawarma: "Шаурма",
+        category_Samsa: "Самса",
+        category_Hot_Meals: "Горячие блюда",
+        category_Snacks: "Закуски",
+        category_Sauces: "Соусы",
+        category_Salads: "Салаты",
+        category_Drinks: "Напитки",
+        category_Others: "Другое"
+      }
+    };
+
+    translations["Uzbek Cyrillic"] = {
+      ...translations.Uzbek,
+      appSubtitle: "Иссиқ таомлар, нафис етказиб бериш",
+      discover: "Танланг",
+      menu: "Меню",
+      checkout: "Буюртма",
+      cart: "Сават",
+      tracking: "Кузатув",
+      orders: "Буюртмалар",
+      account: "Аккаунт",
+      profile: "Профил",
+      deliveryType: "Етказиб бериш тури",
+      delivery: "Етказиб бериш",
+      pickup: "Олиб кетиш",
+      address: "Манзил",
+      addressPlaceholder: "Манзилингизни киритинг",
+      useMyLocation: "Жойлашувимни олиш",
+      selectOnMap: "Харитадан танлаш",
+      selectedDeliveryLocation: "Танланган етказиб бериш нуқтаси",
+      noLocationSelected: "Жойлашув танланмаган",
+      paymentMethod: "Тўлов усули",
+      comment: "Изоҳ",
+      commentPlaceholder: "Буюртма учун изоҳ",
+      confirmOrder: "Буюртмани тасдиқлаш",
+      name: "Исм",
+      namePlaceholder: "Исмингиз",
+      phone: "Телефон",
+      language: "Тил",
+      saveProfile: "Профилни сақлаш",
+      main: "Асосий",
+      addToCart: "Саватга қўшиш",
+      selectQuantity: "Миқдорни танланг",
+      selectDeliveryLocation: "Етказиб бериш жойини танланг",
+      useCurrentLocation: "Жорий жойлашув",
+      cancel: "Бекор қилиш",
+      confirmSelection: "Танловни тасдиқлаш",
+      emptyCartTitle: "Саватингиз бўш",
+      emptyCartDescription: "Буюртмани бошлаш учун менюдан мазали таом танланг.",
+      orderPlaced: "Буюртма муваффақиятли юборилди",
+      checkoutFailed: "Буюртмани расмийлаштириб бўлмади",
+      noOrdersTitle: "Буюртмалар ҳали йўқ",
+      noOrdersDescription: "Буюртмаларингиз ва уларнинг ҳолати шу ерда кўринади.",
+      order: "Буюртма",
+      selectedLocation: "Танланган жойлашув",
+      payment: "Тўлов",
+      savedLocation: "Сақланган жойлашув",
+      userId: "Фойдаланувчи ID",
+      profileSaved: "Профил сақланди",
+      courierDetails: "Курьер маълумотлари",
+      courierName: "Курьер исми",
+      courierPhone: "Курьер телефони",
+      phoneUnavailable: "Телефон рақами мавжуд эмас",
+      locationRefreshRequired: "Жойлашувни янгилаш керак. Telegram ботга қайтиб, жорий жойлашувингизни юборинг.",
+      status_new: "Янги",
+      status_preparing: "Тайёрланмоқда",
+      status_ready: "Тайёр",
+      status_ready_for_pickup: "Тайёр",
+      status_delivering: "Йўлда",
+      status_delivered: "Етказилди",
+      status_picked_up: "Олиб кетилди",
+      status_cancelled: "Бекор қилинди",
+      category_Sets: "Сетлар",
+      category_Burgers: "Бургерлар",
+      category_Shawarma: "Шаварма",
+      category_Samsa: "Сомса",
+      category_Hot_Meals: "Иссиқ таомлар",
+      category_Snacks: "Газаклар",
+      category_Sauces: "Соуслар",
+      category_Salads: "Салатлар",
+      category_Drinks: "Ичимликлар",
+      category_Others: "Бошқалар"
+    };
+
+    Object.assign(translations.Russian, {
+      appTitle: "Simfoniya",
+      appSubtitle: "Milliy taomlari",
+      discover: "Выбор",
+      menu: "Меню",
+      checkout: "Оформление",
+      cart: "Корзина",
+      tracking: "Статус",
+      orders: "Заказы",
+      account: "Аккаунт",
+      profile: "Профиль",
+      deliveryType: "Тип доставки",
+      delivery: "Доставка",
+      pickup: "Самовывоз",
+      address: "Адрес",
+      addressPlaceholder: "Введите ваш адрес",
+      useMyLocation: "Использовать мою геолокацию",
+      selectOnMap: "Выбрать на карте",
+      selectedDeliveryLocation: "Выбранная точка доставки",
+      noLocationSelected: "Локация не выбрана",
+      paymentMethod: "Способ оплаты",
+      cash: "Наличные",
+      card: "Карта",
+      onlinePayment: "Онлайн-оплата",
+      comment: "Комментарий",
+      commentPlaceholder: "Комментарий к заказу",
+      confirmOrder: "Подтвердить заказ",
+      name: "Имя",
+      namePlaceholder: "Ваше имя",
+      phone: "Телефон",
+      phonePlaceholder: "+998...",
+      language: "Язык",
+      saveProfile: "Сохранить профиль",
+      main: "Главная",
+      addToCart: "В корзину",
+      selectQuantity: "Выберите количество",
+      selectDeliveryLocation: "Выберите место доставки",
+      useCurrentLocation: "Текущая геолокация",
+      cancel: "Отмена",
+      confirmSelection: "Подтвердить выбор",
+      minutes: "мин",
+      total: "Итого",
+      lineTotal: "Сумма позиции",
+      emptyCartTitle: "Корзина пуста",
+      emptyCartDescription: "Добавьте что-нибудь вкусное из меню, чтобы начать оформление.",
+      returnToMenu: "Назад в меню",
+      deliveryNote: "Стоимость доставки согласуется с курьером.",
+      orderPlaced: "Заказ успешно оформлен",
+      checkoutFailed: "Не удалось оформить заказ",
+      noOrdersTitle: "Заказов пока нет",
+      noOrdersDescription: "Здесь будут показаны ваши заказы и их статусы.",
+      order: "Заказ",
+      selectedLocation: "Выбранная локация",
+      payment: "Оплата",
+      savedLocation: "Сохранённая локация",
+      userId: "ID пользователя",
+      profileSaved: "Профиль сохранён",
+      courierDetails: "Данные курьера",
+      courierName: "Имя курьера",
+      courierPhone: "Телефон курьера",
+      phoneUnavailable: "Телефон не указан",
+      locationSelectedFromMap: "Локация выбрана на карте.",
+      locationSelected: "Локация выбрана.",
+      currentLocationSaved: "Текущая локация сохранена для этого заказа.",
+      locationSaved: "Локация сохранена.",
+      locationNotSupported: "На этом устройстве геолокация не поддерживается.",
+      gettingLocation: "Получаем вашу геолокацию...",
+      gettingCurrentLocation: "Получаем текущую геолокацию...",
+      locationAccessDenied: "Доступ к геолокации запрещён",
+      tapMapToPin: "Нажмите на карту, чтобы поставить точку доставки.",
+      mapSelectionNeeded: "Сначала выберите точку на карте.",
+      resolvingAddress: "Определяем адрес...",
+      deliveryPointSelected: "Точка доставки выбрана. Подтвердите выбор.",
+      pinMoved: "Метка перемещена. Подтвердите обновлённую точку.",
+      currentLocationSelected: "Текущая локация выбрана. При необходимости поправьте метку.",
+      noDescription: "Нет описания",
+      locationRefreshRequired: "Требуется обновить местоположение. Вернитесь в Telegram-бот и отправьте вашу текущую геолокацию.",
+      status_new: "Новый",
+      status_preparing: "Готовится",
+      status_ready: "Готов",
+      status_ready_for_pickup: "Готов",
+      status_delivering: "В доставке",
+      status_delivered: "Доставлен",
+      status_picked_up: "Получен",
+      status_cancelled: "Отменён",
+      category_Sets: "Сеты",
+      category_Burgers: "Бургеры",
+      category_Shawarma: "Шаурма",
+      category_Samsa: "Самса",
+      category_Hot_Meals: "Горячие блюда",
+      category_Snacks: "Закуски",
+      category_Sauces: "Соусы",
+      category_Salads: "Салаты",
+      category_Drinks: "Напитки",
+      category_Others: "Другое"
+    });
+
+    Object.assign(translations["Uzbek Cyrillic"], {
+      appTitle: "Simfoniya",
+      appSubtitle: "Milliy taomlari",
+      returnToMenu: "Менюга қайтиш",
+      deliveryNote: "Етказиб бериш нархи курьер билан келишилади."
+    });
+
+    function preferredLanguageToAppLanguage(preferredLanguage) {
+      const mapping = {
+        en: "English",
+        uz_latn: "Uzbek",
+        ru: "Russian",
+        uz_cyrl: "Uzbek Cyrillic"
+      };
+      return mapping[preferredLanguage] || "English";
+    }
+
+    function t(key) {
+      return translations[currentLanguage]?.[key] ?? translations.English[key] ?? key;
+    }
+
+    function formatCategoryLabel(category) {
+      return String(category || "")
+        .replace(/^category_/i, "")
+        .replace(/_/g, " ")
+        .trim();
+    }
+
+    function translateCategory(category) {
+      const rawCategory = String(category || "").trim();
+      const normalizedCategory = formatCategoryLabel(rawCategory);
+      const translationKey = `category_${normalizedCategory.replaceAll(" ", "_")}`;
+      const translated = t(translationKey);
+      return translated === translationKey ? normalizedCategory : translated;
+    }
+
+    function getCategorySectionId(category) {
+      return `category-section-${String(category).toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+    }
+
+    function normalizeClientOrderStatus(status, order = null) {
+      let normalizedStatus = String(status || "new")
+        .trim()
+        .replace(/^STATUS_/i, "")
+        .toLowerCase();
+
+      if (order?.delivery_type === "Pickup") {
+        if (normalizedStatus === "ready" || normalizedStatus === "delivering") {
+          normalizedStatus = "ready_for_pickup";
+        } else if (normalizedStatus === "delivered") {
+          normalizedStatus = "picked_up";
+        }
+      }
+
+      return normalizedStatus;
+    }
+
+    function formatStatusLabel(status, order = null) {
+      return t(`status_${normalizeClientOrderStatus(status, order)}`);
+    }
+
+    function applyTranslations() {
+      document.documentElement.lang = currentLanguage === "Russian" ? "ru" : currentLanguage === "Uzbek" ? "uz" : "en";
+      document.title = t("appTitle");
+      document.getElementById("app-title-text").textContent = t("appTitle");
+      document.getElementById("app-subtitle-text").textContent = t("appSubtitle");
+      document.getElementById("main-section-label").textContent = t("discover");
+      document.getElementById("main-section-title").textContent = t("menu");
+      document.getElementById("cart-section-label").textContent = t("checkout");
+      document.getElementById("cart-section-title").textContent = t("cart");
+      document.getElementById("delivery-type-label").textContent = t("deliveryType");
+      document.getElementById("delivery-option-delivery").textContent = t("delivery");
+      document.getElementById("delivery-option-pickup").textContent = t("pickup");
+      document.getElementById("address-label").textContent = t("address");
+      document.getElementById("address").placeholder = t("addressPlaceholder");
+      document.getElementById("use-location-btn").textContent = t("useMyLocation");
+      document.getElementById("select-map-btn").textContent = t("selectOnMap");
+      document.getElementById("selected-location-title").textContent = t("selectedDeliveryLocation");
+      document.getElementById("payment-method-label").textContent = t("paymentMethod");
+      document.getElementById("payment-option-cash").textContent = t("cash");
+      document.getElementById("comment-label").textContent = t("comment");
+      document.getElementById("comment").placeholder = t("commentPlaceholder");
+      document.getElementById("delivery-note-text").textContent = t("deliveryNote");
+      document.getElementById("confirm-order-btn").textContent = t("confirmOrder");
+      document.getElementById("orders-section-label").textContent = t("tracking");
+      document.getElementById("orders-section-title").textContent = t("orders");
+      document.getElementById("profile-section-label").textContent = t("account");
+      document.getElementById("profile-section-title").textContent = t("profile");
+      document.getElementById("profile-name-label").textContent = t("name");
+      document.getElementById("profileName").placeholder = t("namePlaceholder");
+      document.getElementById("profile-phone-label").textContent = t("phone");
+      document.getElementById("profilePhone").placeholder = t("phonePlaceholder");
+      document.getElementById("profile-language-label").textContent = t("language");
+      document.getElementById("save-profile-btn").textContent = t("saveProfile");
+      document.getElementById("nav-main-text").textContent = t("main");
+      document.getElementById("nav-cart-text").textContent = t("cart");
+      document.getElementById("nav-orders-text").textContent = t("orders");
+      document.getElementById("nav-profile-text").textContent = t("profile");
+      document.getElementById("add-cart-label-text").textContent = t("selectQuantity");
+      document.getElementById("map-picker-title-text").textContent = t("selectDeliveryLocation");
+      document.getElementById("map-current-location-btn").textContent = t("useCurrentLocation");
+      document.getElementById("map-cancel-btn").textContent = t("cancel");
+      document.getElementById("map-confirm-btn").textContent = t("confirmSelection");
+      updateCheckoutDeliveryVisibility();
+
+      if (!checkoutResolvedAddress && checkoutLatitude === null && checkoutLongitude === null) {
+        document.getElementById("selected-location-text").textContent = t("noLocationSelected");
+      }
+
+      renderCategories();
+      renderMenu();
+      if (!document.getElementById("tab-cart").classList.contains("hidden")) {
+        loadCart();
+      }
+      if (!document.getElementById("tab-orders").classList.contains("hidden")) {
+        loadOrders();
+      }
+    }
 
     const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
 
@@ -239,6 +1699,22 @@
     const tgUser = tg?.initDataUnsafe?.user || null;
     const userId = tgUser ? String(tgUser.id) : "demo-user-1";
     const initData = tg?.initData || "";
+    const addToCartModalEl = document.getElementById("add-to-cart-modal");
+    const addToCartNameEl = document.getElementById("add-to-cart-name");
+    const addToCartQtyEl = document.getElementById("add-to-cart-qty");
+    const addToCartImageEl = document.getElementById("add-to-cart-image");
+    const addToCartOkEl = document.getElementById("add-to-cart-ok");
+    const deliveryTypeEl = document.getElementById("deliveryType");
+    const deliveryDetailsSectionEl = document.getElementById("delivery-details-section");
+    const addressInputEl = document.getElementById("address");
+    const locationMessageEl = document.getElementById("location-message");
+    const selectedLocationCardEl = document.getElementById("selected-location-card");
+    const selectedLocationTextEl = document.getElementById("selected-location-text");
+    const mapPickerModalEl = document.getElementById("map-picker-modal");
+    const mapPickerStatusEl = document.getElementById("map-picker-status");
+    const cartBadgeEl = document.getElementById("cart-badge");
+    const cartCheckoutCardEl = document.getElementById("cart-checkout-card");
+    let cartState = { items: [], total: 0 };
 
     async function apiFetch(url, options = {}) {
       const headers = {
@@ -247,22 +1723,211 @@
         ...(options.headers || {})
       };
 
-      return fetch(url, {
+      const response = await fetch(url, {
         ...options,
         headers
       });
+
+      if (response.status === 403) {
+        const data = await response.clone().json().catch(() => ({}));
+        const detail = data.detail || "";
+        if (detail.includes("Location refresh required") || detail.includes("Verification required")) {
+          handleLocationRefreshRequirement(detail);
+        }
+      }
+
+      return response;
+    }
+
+    function handleLocationRefreshRequirement(message) {
+      locationRefreshRequired = true;
+      locationRefreshMessage = message || "Location refresh required. Please return to the Telegram bot and share your current location.";
+      if (!locationRefreshAlertShown) {
+        locationRefreshAlertShown = true;
+        alert(locationRefreshMessage);
+      }
+    }
+
+    function clearLocationRefreshRequirement() {
+      locationRefreshRequired = false;
+      locationRefreshMessage = "";
+      locationRefreshAlertShown = false;
+    }
+
+    function ensureOrderingAccess() {
+      if (!locationRefreshRequired) {
+        return true;
+      }
+      handleLocationRefreshRequirement(locationRefreshMessage);
+      return false;
+    }
+
+    function updateCartBadge(items = cartState.items) {
+      const totalQuantity = (items || []).reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+      cartBadgeEl.textContent = String(totalQuantity);
+      cartBadgeEl.classList.toggle("hidden", totalQuantity <= 0);
+    }
+
+    function setCartState(nextCart) {
+      cartState = {
+        items: Array.isArray(nextCart?.items) ? nextCart.items : [],
+        total: Number(nextCart?.total || 0),
+      };
+      updateCartBadge(cartState.items);
+    }
+
+    function goToMenuFromCart() {
+      switchTab("main", document.querySelector(".bottom-nav .tab-btn"));
+    }
+
+    function renderCart(cart = cartState) {
+      setCartState(cart);
+
+      const cartList = document.getElementById("cart-list");
+      cartList.innerHTML = "";
+      const isEmpty = !cartState.items.length;
+      cartCheckoutCardEl.classList.toggle("hidden", isEmpty);
+
+      if (isEmpty) {
+        cartList.innerHTML = `
+          <div class="card">
+            <div class="food-title">${t("emptyCartTitle")}</div>
+            <div class="food-desc">${t("emptyCartDescription")}</div>
+            <div class="empty-cart-actions">
+              <button class="btn" type="button" onclick="goToMenuFromCart()">${t("returnToMenu")}</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      cartState.items.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "card cart-item-card";
+        card.innerHTML = `
+          <div class="cart-item-image">${renderCartItemImage(item)}</div>
+          <div class="cart-item-body">
+            <div class="food-title">${item.name}</div>
+            <div class="food-row">
+              <div class="food-price">${item.price.toLocaleString()} UZS</div>
+              <div class="qty-controls">
+                <button class="btn btn-secondary" onclick="changeQty(${item.product_id}, ${item.quantity - 1})">-</button>
+                <span>${item.quantity}</span>
+                <button class="btn btn-secondary" onclick="changeQty(${item.product_id}, ${item.quantity + 1})">+</button>
+              </div>
+            </div>
+            <div class="cart-item-meta">
+              <div>x${item.quantity}</div>
+              <div>${t("lineTotal")}: ${item.line_total.toLocaleString()} UZS</div>
+            </div>
+          </div>
+        `;
+        cartList.appendChild(card);
+      });
+
+      const totalCard = document.createElement("div");
+      totalCard.className = "card total-box";
+      totalCard.innerText = `${t("total")}: ${cartState.total.toLocaleString()} UZS`;
+      cartList.appendChild(totalCard);
+    }
+
+    function isPickupSelected() {
+      return deliveryTypeEl.value === "Pickup";
+    }
+
+    function clearCheckoutDeliveryState() {
+      checkoutLatitude = null;
+      checkoutLongitude = null;
+      checkoutResolvedAddress = "";
+      mapPickerSelection = null;
+      addressInputEl.value = "";
+      setLocationMessage("");
+      updateSelectedLocationSummary();
+      closeMapPicker();
+    }
+
+    function updateCheckoutDeliveryVisibility({ clearPickupState = false } = {}) {
+      const pickupSelected = isPickupSelected();
+
+      if (pickupSelected && clearPickupState) {
+        clearCheckoutDeliveryState();
+      }
+
+      deliveryDetailsSectionEl.classList.toggle("hidden", pickupSelected);
+      if (pickupSelected) {
+        selectedLocationCardEl.classList.add("hidden");
+      } else {
+        updateSelectedLocationSummary();
+      }
+    }
+
+    function getTabSections() {
+      return document.querySelectorAll(".container > section[id^='tab-']");
     }
 
     function switchTab(tab, btn) {
-      document.querySelectorAll("section").forEach(s => s.classList.add("hidden"));
+      if (locationRefreshRequired && tab === "cart") {
+        handleLocationRefreshRequirement(locationRefreshMessage);
+        return;
+      }
+      getTabSections().forEach(section => section.classList.add("hidden"));
       document.getElementById(`tab-${tab}`).classList.remove("hidden");
 
       document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
 
+      if (tab === "main") {
+        if (Object.keys(menuData).length) {
+          renderMenu();
+          renderCategories();
+          requestAnimationFrame(updateActiveCategoryFromScroll);
+        } else {
+          loadMenu();
+        }
+      }
       if (tab === "cart") loadCart();
       if (tab === "orders") loadOrders();
       if (tab === "profile") loadProfile();
+    }
+
+    function scrollToCategory(category) {
+      const section = document.getElementById(getCategorySectionId(category));
+      if (!section) {
+        return;
+      }
+
+      currentCategory = category;
+      renderCategories();
+      section.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }
+
+    function updateActiveCategoryFromScroll() {
+      if (document.getElementById("tab-main").classList.contains("hidden")) {
+        return;
+      }
+
+      const categories = Object.keys(menuData);
+      if (!categories.length) {
+        return;
+      }
+
+      const stickyOffset = 180;
+      let nextCategory = categories[0];
+
+      categories.forEach(category => {
+        const section = document.getElementById(getCategorySectionId(category));
+        if (section && section.getBoundingClientRect().top - stickyOffset <= 0) {
+          nextCategory = category;
+        }
+      });
+
+      if (nextCategory !== currentCategory) {
+        currentCategory = nextCategory;
+        renderCategories();
+      }
     }
 
     async function loadMenu() {
@@ -278,107 +1943,472 @@
       categories.forEach(cat => {
         const btn = document.createElement("button");
         btn.className = "category-btn" + (cat === currentCategory ? " active" : "");
-        btn.innerText = cat;
-        btn.onclick = () => {
-          currentCategory = cat;
-          renderCategories();
-          renderMenu();
-        };
+        btn.dataset.category = cat;
+        btn.innerText = translateCategory(cat);
+        btn.onclick = () => scrollToCategory(cat);
         categoriesEl.appendChild(btn);
       });
 
       renderMenu();
+      requestAnimationFrame(updateActiveCategoryFromScroll);
     }
 
     function renderCategories() {
       [...document.querySelectorAll(".category-btn")].forEach(btn => {
-        btn.classList.toggle("active", btn.innerText === currentCategory);
+        btn.textContent = translateCategory(btn.dataset.category);
+        btn.classList.toggle("active", btn.dataset.category === currentCategory);
+        if (btn.dataset.category === currentCategory) {
+          btn.scrollIntoView({
+            behavior: "smooth",
+            inline: "center",
+            block: "nearest"
+          });
+        }
       });
+    }
+
+    function getStatusBadgeClass(status) {
+      return `status-badge status-${status || "new"}`;
+    }
+
+    function getMenuMeta(item) {
+      const rating = (4.3 + ((item.id || 1) % 4) * 0.1).toFixed(1);
+      const time = 20 + ((item.id || 1) % 3) * 5;
+      return { rating, time };
+    }
+
+    function setLocationMessage(message = "", isError = false) {
+      locationMessageEl.textContent = message;
+      locationMessageEl.className = "location-message" + (isError ? " error" : "");
+    }
+
+    function updateSelectedLocationSummary() {
+      if (isPickupSelected()) {
+        selectedLocationCardEl.classList.add("hidden");
+        selectedLocationTextEl.textContent = t("noLocationSelected");
+        return;
+      }
+
+      const parts = [];
+      if (checkoutResolvedAddress) {
+        parts.push(checkoutResolvedAddress);
+      }
+      if (checkoutLatitude !== null && checkoutLongitude !== null) {
+        parts.push(`${checkoutLatitude.toFixed(5)}, ${checkoutLongitude.toFixed(5)}`);
+      }
+
+      if (!parts.length) {
+        selectedLocationCardEl.classList.add("hidden");
+        selectedLocationTextEl.textContent = t("noLocationSelected");
+        return;
+      }
+
+      selectedLocationTextEl.textContent = parts.join(" | ");
+      selectedLocationCardEl.classList.remove("hidden");
+    }
+
+    function setMapPickerStatus(message = "", isError = false) {
+      mapPickerStatusEl.textContent = message;
+      mapPickerStatusEl.className = "map-picker-status" + (isError ? " error" : "");
+    }
+
+    function ensureMapPicker() {
+      if (mapPicker) {
+        return;
+      }
+
+      mapPicker = L.map("map-picker-canvas").setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap contributors"
+      }).addTo(mapPicker);
+
+      mapPicker.on("click", event => {
+        setMapPickerSelection(event.latlng.lat, event.latlng.lng);
+        setMapPickerStatus(t("deliveryPointSelected"));
+      });
+    }
+
+    function setMapPickerSelection(latitude, longitude) {
+      mapPickerSelection = {
+        latitude,
+        longitude
+      };
+
+      if (!mapPickerMarker) {
+        mapPickerMarker = L.marker([latitude, longitude], { draggable: true }).addTo(mapPicker);
+        mapPickerMarker.on("dragend", dragEvent => {
+          const position = dragEvent.target.getLatLng();
+          setMapPickerSelection(position.lat, position.lng);
+          setMapPickerStatus(t("pinMoved"));
+        });
+      } else {
+        mapPickerMarker.setLatLng([latitude, longitude]);
+      }
+    }
+
+    function openMapPicker() {
+      if (isPickupSelected()) {
+        return;
+      }
+
+      mapPickerModalEl.classList.add("visible");
+      ensureMapPicker();
+
+      const selectedCenter = checkoutLatitude !== null && checkoutLongitude !== null
+        ? [checkoutLatitude, checkoutLongitude]
+        : DEFAULT_MAP_CENTER;
+      mapPicker.setView(selectedCenter, DEFAULT_MAP_ZOOM);
+
+      if (checkoutLatitude !== null && checkoutLongitude !== null) {
+        setMapPickerSelection(checkoutLatitude, checkoutLongitude);
+      }
+
+      setMapPickerStatus(t("tapMapToPin"));
+      setTimeout(() => {
+        mapPicker.invalidateSize();
+      }, 50);
+    }
+
+    function closeMapPicker() {
+      mapPickerModalEl.classList.remove("visible");
+    }
+
+    function handleMapPickerOverlay(event) {
+      if (event.target === mapPickerModalEl) {
+        closeMapPicker();
+      }
+    }
+
+    async function reverseGeocode(latitude, longitude) {
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`,
+          {
+            headers: {
+              Accept: "application/json"
+            }
+          }
+        );
+        if (!response.ok) {
+          return "";
+        }
+        const data = await response.json();
+        return data.display_name || "";
+      } catch (error) {
+        console.error(error);
+        return "";
+      }
+    }
+
+    async function confirmMapSelection() {
+      if (!mapPickerSelection) {
+        setMapPickerStatus(t("mapSelectionNeeded"), true);
+        return;
+      }
+
+      checkoutLatitude = mapPickerSelection.latitude;
+      checkoutLongitude = mapPickerSelection.longitude;
+      setMapPickerStatus(t("resolvingAddress"));
+      const resolvedAddress = await reverseGeocode(checkoutLatitude, checkoutLongitude);
+      checkoutResolvedAddress = resolvedAddress;
+      updateSelectedLocationSummary();
+      setLocationMessage(resolvedAddress ? t("locationSelectedFromMap") : t("locationSelected"));
+      closeMapPicker();
+    }
+
+    function centerMapPickerOnCoordinates(latitude, longitude) {
+      ensureMapPicker();
+      mapPicker.setView([latitude, longitude], 16);
+      setMapPickerSelection(latitude, longitude);
+      setMapPickerStatus(t("currentLocationSelected"));
+    }
+
+    function centerMapPickerOnCurrentLocation() {
+      if (!navigator.geolocation) {
+        setMapPickerStatus(t("locationNotSupported"), true);
+        return;
+      }
+
+      setMapPickerStatus(t("gettingCurrentLocation"));
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          centerMapPickerOnCoordinates(position.coords.latitude, position.coords.longitude);
+        },
+        () => {
+          setMapPickerStatus(t("locationAccessDenied"), true);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        }
+      );
+    }
+
+    function useMyLocation() {
+      if (!navigator.geolocation) {
+        setLocationMessage(t("locationNotSupported"), true);
+        return;
+      }
+
+      setLocationMessage(t("gettingLocation"));
+      navigator.geolocation.getCurrentPosition(
+        async position => {
+          checkoutLatitude = position.coords.latitude;
+          checkoutLongitude = position.coords.longitude;
+          checkoutResolvedAddress = await reverseGeocode(checkoutLatitude, checkoutLongitude);
+          updateSelectedLocationSummary();
+          setLocationMessage(checkoutResolvedAddress ? t("currentLocationSaved") : t("locationSaved"));
+        },
+        () => {
+          checkoutLatitude = null;
+          checkoutLongitude = null;
+          checkoutResolvedAddress = "";
+          updateSelectedLocationSummary();
+          setLocationMessage(t("locationAccessDenied"), true);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        }
+      );
+    }
+
+    function shouldHideClientOrder(order) {
+      if (normalizeClientOrderStatus(order.status, order) !== "delivered" || !order.delivered_at) {
+        return false;
+      }
+
+      const deliveredAt = new Date(order.delivered_at);
+      if (isNaN(deliveredAt.getTime())) {
+        return false;
+      }
+
+      return Date.now() - deliveredAt.getTime() > 2 * 60 * 60 * 1000;
+    }
+
+    function shouldShowCourierDetails(order) {
+      const normalizedStatus = normalizeClientOrderStatus(order.status, order);
+      return ["delivering", "delivered"].includes(normalizedStatus) && Boolean(order.courier_name || order.courier_phone);
+    }
+
+    function toggleCourierDetails(orderId) {
+      if (expandedCourierDetails.has(orderId)) {
+        expandedCourierDetails.delete(orderId);
+      } else {
+        expandedCourierDetails.add(orderId);
+      }
+      loadOrders();
+    }
+
+    function renderCourierDetails(order) {
+      if (!shouldShowCourierDetails(order) || !expandedCourierDetails.has(order.order_id)) {
+        return "";
+      }
+
+      return `
+        <div class="courier-details-panel">
+          <div class="courier-details-title">${t("courierDetails")}</div>
+          <div class="courier-details-row"><strong>${t("courierName")}:</strong> ${order.courier_name || "-"}</div>
+          <div class="courier-details-row"><strong>${t("courierPhone")}:</strong> ${order.courier_phone || t("phoneUnavailable")}</div>
+        </div>
+      `;
     }
 
     function renderMenu() {
       const menuList = document.getElementById("menu-list");
       menuList.innerHTML = "";
 
-      const items = menuData[currentCategory] || [];
-      items.forEach(item => {
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `
-          <div class="food-title">${item.name}</div>
-          <div class="food-desc">${item.description}</div>
-          <div class="food-row">
-            <div>${item.price.toLocaleString()} UZS</div>
-            <button class="btn" onclick="addToCart(${item.id})">Add to cart</button>
+      Object.entries(menuData).forEach(([category, items]) => {
+        const section = document.createElement("section");
+        section.className = "category-section";
+        section.id = getCategorySectionId(category);
+
+        const cardsHtml = items.map(item => `
+          <article class="card menu-card ${item.is_available === false ? "sold-out" : ""}" onclick="addToCart(${item.id})" role="button" tabindex="0" aria-label="${item.name}">
+            ${item.image_url ? `<img class="food-image" src="${item.image_url}" alt="${item.name}" />` : `<div class="food-image"></div>`}
+            <div class="food-content">
+              <div class="food-header">
+                <div class="food-title">${item.name}</div>
+                <div class="food-price">${item.price.toLocaleString()} UZS</div>
+              </div>
+              ${item.is_available === false ? `<div class="sold-out-badge">Run Out</div>` : ""}
+            </div>
+          </article>
+        `).join("");
+
+        section.innerHTML = `
+          <h3 class="category-section-title">${translateCategory(category)}</h3>
+          <div class="category-row">
+            ${cardsHtml}
           </div>
         `;
-        menuList.appendChild(card);
+        menuList.appendChild(section);
       });
     }
 
-    async function addToCart(productId) {
-      await apiFetch(`${API_BASE}/api/cart/add`, {
-        method: "POST",
-        body: JSON.stringify({
-          product_id: productId,
-          quantity: 1
-        })
-      });
-      alert("Added to cart");
+    function getProductById(productId) {
+      for (const items of Object.values(menuData)) {
+        const product = items.find(item => item.id === productId);
+        if (product) {
+          return product;
+        }
+      }
+      return null;
     }
 
-    async function loadCart() {
-      const res = await apiFetch(`${API_BASE}/api/cart/me`);
-      const data = await res.json();
-
-      const cartList = document.getElementById("cart-list");
-      cartList.innerHTML = "";
-
-      if (!data.items.length) {
-        cartList.innerHTML = `<div class="card">Your cart is empty</div>`;
+    function renderAddToCartImage(product) {
+      const imageUrl = product?.image || product?.photo || product?.image_url || "";
+      if (imageUrl) {
+        addToCartImageEl.innerHTML = `<img src="${imageUrl}" alt="${product.name}" />`;
         return;
       }
 
-      data.items.forEach(item => {
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `
-          <div class="food-title">${item.name}</div>
-          <div class="food-row">
-            <div>${item.price.toLocaleString()} UZS</div>
-            <div class="qty-controls">
-              <button class="btn btn-secondary" onclick="changeQty(${item.product_id}, ${item.quantity - 1})">-</button>
-              <span>${item.quantity}</span>
-              <button class="btn btn-secondary" onclick="changeQty(${item.product_id}, ${item.quantity + 1})">+</button>
-            </div>
-          </div>
-          <div style="margin-top:8px;">Line Total: ${item.line_total.toLocaleString()} UZS</div>
-        `;
-        cartList.appendChild(card);
+      const placeholder = (product?.name || "F").trim().charAt(0) || "F";
+      addToCartImageEl.textContent = placeholder;
+    }
+
+    function renderCartItemImage(item) {
+      const imageUrl = item?.image || item?.photo || item?.image_url || "";
+      if (imageUrl) {
+        return `<img src="${imageUrl}" alt="${item.name}" />`;
+      }
+
+      const placeholder = (item?.name || "F").trim().charAt(0) || "F";
+      return placeholder;
+    }
+
+    function renderAddToCartModal() {
+      addToCartQtyEl.textContent = String(selectedCartQuantity);
+      addToCartNameEl.textContent = selectedCartProduct?.name || "Food Item";
+      renderAddToCartImage(selectedCartProduct);
+    }
+
+    function openAddToCartModal(productId) {
+      if (!ensureOrderingAccess()) {
+        return;
+      }
+      const product = getProductById(productId);
+      if (!product) {
+        return;
+      }
+
+      selectedCartProduct = product;
+      selectedCartQuantity = 1;
+      renderAddToCartModal();
+      addToCartModalEl.classList.add("visible");
+    }
+
+    function closeAddToCartModal() {
+      addToCartModalEl.classList.remove("visible");
+      selectedCartProduct = null;
+      selectedCartQuantity = 1;
+    }
+
+    function handleAddToCartOverlay(event) {
+      if (event.target === addToCartModalEl) {
+        closeAddToCartModal();
+      }
+    }
+
+    function updateAddToCartQuantity(delta) {
+      selectedCartQuantity = Math.max(1, selectedCartQuantity + delta);
+      renderAddToCartModal();
+    }
+
+    async function sendAddToCart(productId, quantity = 1) {
+      const res = await apiFetch(`${API_BASE}/api/cart/add`, {
+        method: "POST",
+        body: JSON.stringify({
+          product_id: productId,
+          quantity
+        })
       });
 
-      const totalCard = document.createElement("div");
-      totalCard.className = "card total-box";
-      totalCard.innerText = `Total: ${data.total.toLocaleString()} UZS`;
-      cartList.appendChild(totalCard);
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.detail || "Failed to add to cart");
+      }
+
+      const data = await res.json();
+      return data.cart || { items: [], total: 0 };
+    }
+
+    async function confirmAddToCart() {
+      if (!selectedCartProduct) {
+        return;
+      }
+
+      const productId = selectedCartProduct.id;
+      const quantity = selectedCartQuantity;
+      addToCartOkEl.disabled = true;
+
+      try {
+        const updatedCart = await sendAddToCart(productId, quantity);
+        setCartState(updatedCart);
+        closeAddToCartModal();
+        if (!document.getElementById("tab-cart").classList.contains("hidden")) {
+          renderCart(updatedCart);
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        addToCartOkEl.disabled = false;
+      }
+    }
+
+    function addToCart(productId) {
+      const product = getProductById(productId);
+      if (product && product.is_available === false) {
+        return;
+      }
+      openAddToCartModal(productId);
+    }
+
+    async function loadCart() {
+      if (!ensureOrderingAccess()) {
+        return;
+      }
+      const res = await apiFetch(`${API_BASE}/api/cart/me`);
+      if (!res.ok) {
+        return;
+      }
+      const data = await res.json();
+      renderCart(data);
     }
 
     async function changeQty(productId, quantity) {
-      await apiFetch(`${API_BASE}/api/cart/update`, {
+      if (!ensureOrderingAccess()) {
+        return;
+      }
+      const res = await apiFetch(`${API_BASE}/api/cart/update`, {
         method: "POST",
         body: JSON.stringify({
           product_id: productId,
           quantity: quantity
         })
       });
-      loadCart();
+      if (!res.ok) {
+        return;
+      }
+      const data = await res.json();
+      renderCart(data.cart || { items: [], total: 0 });
     }
 
     async function checkout() {
+      if (!ensureOrderingAccess()) {
+        return;
+      }
+      const pickupSelected = isPickupSelected();
       const payload = {
-        delivery_type: document.getElementById("deliveryType").value,
-        address: document.getElementById("address").value,
-        payment_method: document.getElementById("paymentMethod").value,
+        delivery_type: deliveryTypeEl.value,
+        address: pickupSelected ? "" : addressInputEl.value,
+        latitude: pickupSelected ? null : checkoutLatitude,
+        longitude: pickupSelected ? null : checkoutLongitude,
+        resolved_address: pickupSelected ? "" : checkoutResolvedAddress,
+        payment_method: "Cash",
         comment: document.getElementById("comment").value
       };
 
@@ -390,38 +2420,55 @@
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.detail || "Checkout failed");
+        alert(data.detail || t("checkoutFailed"));
         return;
       }
 
-      alert("Order placed successfully");
-      loadCart();
+      alert(t("orderPlaced"));
+      checkoutLatitude = null;
+      checkoutLongitude = null;
+      checkoutResolvedAddress = "";
+      setLocationMessage("");
+      updateSelectedLocationSummary();
+      document.getElementById("address").value = "";
+      document.getElementById("comment").value = "";
+      renderCart({ items: [], total: 0 });
       loadOrders();
     }
 
     async function loadOrders() {
       const res = await apiFetch(`${API_BASE}/api/orders/me`);
-      const orders = await res.json();
+      const orders = (await res.json()).filter(order => !shouldHideClientOrder(order));
 
       const ordersList = document.getElementById("orders-list");
       ordersList.innerHTML = "";
 
       if (!orders.length) {
-        ordersList.innerHTML = `<div class="card">No orders yet</div>`;
+        ordersList.innerHTML = `<div class="card"><div class="food-title">${t("noOrdersTitle")}</div><div class="food-desc">${t("noOrdersDescription")}</div></div>`;
         return;
       }
 
       orders.forEach(order => {
         const itemsHtml = order.items.map(i => `${i.name} x${i.quantity}`).join("<br>");
+        const showCourierAction = shouldShowCourierDetails(order);
+        const displayStatus = normalizeClientOrderStatus(order.status, order);
         const card = document.createElement("div");
         card.className = "card";
         card.innerHTML = `
-          <div class="food-title">Order #${order.order_id}</div>
-          <div>Status: ${order.status}</div>
-          <div style="margin-top:8px;">${itemsHtml}</div>
-          <div style="margin-top:8px;"><strong>Total:</strong> ${order.total.toLocaleString()} UZS</div>
-          <div><strong>Delivery:</strong> ${order.delivery_type}</div>
-          <div><strong>Payment:</strong> ${order.payment_method}</div>
+          <div class="order-header">
+            <div class="food-title">${t("order")} #${order.order_id}</div>
+            <div class="order-status-column">
+              <span class="${getStatusBadgeClass(displayStatus)}">${formatStatusLabel(displayStatus, order)}</span>
+              ${showCourierAction ? `<button class="btn btn-secondary order-action-btn" onclick="toggleCourierDetails('${order.order_id}')">${t("courierDetails")}</button>` : ""}
+            </div>
+          </div>
+          <div class="food-desc">${itemsHtml}</div>
+          <div><strong>${t("total")}:</strong> ${order.total.toLocaleString()} UZS</div>
+          <div><strong>${t("delivery")}:</strong> ${order.delivery_type === "Pickup" ? t("pickup") : t("delivery")}</div>
+          <div><strong>${t("selectedLocation")}:</strong> ${order.resolved_address || (order.latitude !== null && order.longitude !== null ? `${order.latitude.toFixed(5)}, ${order.longitude.toFixed(5)}` : "-")}</div>
+          <div><strong>${t("address")}:</strong> ${order.address || "-"}</div>
+          <div><strong>${t("payment")}:</strong> ${t("cash")}</div>
+          ${renderCourierDetails(order)}
         `;
         ordersList.appendChild(card);
       });
@@ -429,27 +2476,59 @@
 
     async function loadProfile() {
       const res = await apiFetch(`${API_BASE}/api/profile/me`);
+      if (!res.ok) {
+        return null;
+      }
       const profile = await res.json();
+      console.log("[app] profile check result", {
+        app_ready: profile.app_ready,
+        verification_required: profile.verification_required,
+        location_refresh_required: profile.location_refresh_required,
+        last_location_at: profile.last_location_at,
+      });
+      if (profile.location_refresh_required) {
+        handleLocationRefreshRequirement(profile.location_refresh_message);
+      } else {
+        clearLocationRefreshRequirement();
+      }
+      currentLanguage = translations[preferredLanguageToAppLanguage(profile.preferred_language)]
+        ? preferredLanguageToAppLanguage(profile.preferred_language)
+        : (translations[profile.language] ? profile.language : "English");
+      applyTranslations();
 
       document.getElementById("profileName").value = profile.name || "";
       document.getElementById("profilePhone").value = profile.phone || "";
-      document.getElementById("profileLanguage").value = profile.language || "English";
+      document.getElementById("profileLanguage").value = currentLanguage;
+
+      if (checkoutLatitude === null && checkoutLongitude === null && typeof profile.latitude === "number" && typeof profile.longitude === "number") {
+        checkoutLatitude = profile.latitude;
+        checkoutLongitude = profile.longitude;
+        checkoutResolvedAddress = profile.readable_address || checkoutResolvedAddress;
+        updateSelectedLocationSummary();
+      }
 
       document.getElementById("profile-info").innerHTML = `
-        <div class="card">
-          <div><strong>Name:</strong> ${profile.name || "-"}</div>
-          <div><strong>Phone:</strong> ${profile.phone || "-"}</div>
-          <div><strong>Language:</strong> ${profile.language || "-"}</div>
-          <div><strong>User ID:</strong> ${userId}</div>
+        <div class="card profile-summary">
+          <div><strong>${t("name")}:</strong> ${profile.name || "-"}</div>
+          <div><strong>${t("phone")}:</strong> ${profile.phone || "-"}</div>
+          <div><strong>${t("language")}:</strong> ${currentLanguage}</div>
+          <div><strong>${t("savedLocation")}:</strong> ${typeof profile.latitude === "number" && typeof profile.longitude === "number" ? `${profile.latitude.toFixed(5)}, ${profile.longitude.toFixed(5)}` : "-"}</div>
+          <div><strong>${t("userId")}:</strong> ${userId}</div>
         </div>
       `;
+      return profile;
     }
 
     async function saveProfile() {
+      currentLanguage = document.getElementById("profileLanguage").value;
+      applyTranslations();
       const payload = {
         name: document.getElementById("profileName").value,
         phone: document.getElementById("profilePhone").value,
-        language: document.getElementById("profileLanguage").value
+        language: currentLanguage,
+        latitude: checkoutLatitude,
+        longitude: checkoutLongitude,
+        readable_address: checkoutResolvedAddress
       };
 
       const res = await apiFetch(`${API_BASE}/api/profile/update`, {
@@ -458,11 +2537,27 @@
       });
 
       const data = await res.json();
-      alert(data.message || "Profile saved");
+      alert(data.message || t("profileSaved"));
       loadProfile();
     }
 
-    loadMenu();
+    async function initializeApp() {
+      const profile = await loadProfile();
+      if (!profile) {
+        return;
+      }
+      loadMenu();
+      loadCart();
+    }
+
+    deliveryTypeEl.addEventListener("change", () => {
+      updateCheckoutDeliveryVisibility({ clearPickupState: isPickupSelected() });
+    });
+    updateSelectedLocationSummary();
+    updateCheckoutDeliveryVisibility();
+    applyTranslations();
+    window.addEventListener("scroll", updateActiveCategoryFromScroll, { passive: true });
+    initializeApp();
   </script>
 </body>
 </html>
